@@ -40,7 +40,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     override func awakeFromNib() {
         super.awakeFromNib()
         setupLongPress()
-        setupMenu()
+        setupMenuItems()
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -118,22 +118,22 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
             print("longPress")
             self.becomeFirstResponder()
             
+            // 菜单显示位置
+            menu.setTargetRect(self.bounds, in: self)
+            
             // 显示菜单
             menu.setMenuVisible(true, animated: true)
         }
     }
     
     // MARK:- 菜单相关设置
-    /// 自定义菜单的选项和显示位置
-    fileprivate func setupMenu() {
+    /// 自定义菜单的选项
+    fileprivate func setupMenuItems() {
         let skipAction = UIMenuItem(title: "跳过", action: #selector(actionAll))
         let okAction = UIMenuItem(title: "还行", action: #selector(actionAll))
         let badAction = UIMenuItem(title: "差评", action: #selector(actionAll))
         let remarksAction = UIMenuItem(title: "备注", action: #selector(actionAll))
         menu.menuItems = [skipAction, okAction, badAction, remarksAction]
-        
-        // 菜单显示位置
-        menu.setTargetRect(self.bounds, in: self)
     }
     
     @objc fileprivate func actionAll() {
