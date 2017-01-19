@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  MoreColorStatus
+//  ColorfulButton
 //
-//  Created by zhi zhou on 2017/1/4.
+//  Created by zhi zhou on 2017/1/19.
 //  Copyright © 2017年 zhi zhou. All rights reserved.
 //
 
