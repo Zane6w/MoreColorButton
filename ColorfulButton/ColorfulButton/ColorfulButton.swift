@@ -41,6 +41,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         super.awakeFromNib()
         setupLongPress()
         setupMenuItems()
+        opinionStatus()
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -49,25 +50,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         // 点击时取消菜单的第一响应者并且隐藏菜单
         self.resignFirstResponder()
         menu.setMenuVisible(false, animated: true)
-        
-        // 传递出去点击事件和参数
-        if buttonTapHandler != nil {
-            buttonTapHandler!(self)
-        }
-        
-        // 状态判断与改变
-        switch bgStatus {
-        case .Base:
-            changeColor(color: setColor(red: 154, green: 154, blue: 161))
-        case .Bad:
-            changeColor(color: setColor(red: 255, green: 90, blue: 95))
-        case .Okay:
-            changeColor(color: setColor(red: 246, green: 212, blue: 49))
-        case .Good:
-            changeColor(color: setColor(red: 128, green: 192, blue: 81))
-        default:
-            changeColor(color: .white)
-        }
         
         // 当前状态在枚举数组中的 index
         let currentIndex = StatusType.allValues.index(of: bgStatus)
@@ -81,6 +63,30 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
            bgStatus = StatusType.allValues[currentIndex! + 1]
         } else {
            bgStatus = StatusType.allValues.first!
+        }
+        
+        // 状态判断与改变
+        opinionStatus()
+        
+        // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
+    }
+    
+    // MARK:- 状态判断与颜色改变
+    fileprivate func opinionStatus() {
+        switch bgStatus {
+        case .Base:
+            changeColor(color: setColor(red: 154, green: 154, blue: 161))
+        case .Bad:
+            changeColor(color: setColor(red: 255, green: 90, blue: 95))
+        case .Okay:
+            changeColor(color: setColor(red: 246, green: 212, blue: 49))
+        case .Good:
+            changeColor(color: setColor(red: 128, green: 192, blue: 81))
+        default:
+            changeColor(color: .white)
         }
     }
     
@@ -115,7 +121,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     @objc fileprivate func longPress(longPress: UILongPressGestureRecognizer) {
         // 长按手势按下和抬起会调用两次
         if longPress.state == .began {
-            print("longPress")
             self.becomeFirstResponder()
             
             // 菜单显示位置
@@ -129,16 +134,48 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 菜单相关设置
     /// 自定义菜单的选项
     fileprivate func setupMenuItems() {
-        let skipAction = UIMenuItem(title: "跳过", action: #selector(actionAll))
-        let okAction = UIMenuItem(title: "还行", action: #selector(actionAll))
-        let badAction = UIMenuItem(title: "差评", action: #selector(actionAll))
-        let remarksAction = UIMenuItem(title: "备注", action: #selector(actionAll))
+        let skipAction = UIMenuItem(title: "跳过", action: #selector(skip))
+        let okAction = UIMenuItem(title: "还行", action: #selector(ok))
+        let badAction = UIMenuItem(title: "差评", action: #selector(bad))
+        let remarksAction = UIMenuItem(title: "备注", action: #selector(remarks))
         menu.menuItems = [skipAction, okAction, badAction, remarksAction]
     }
     
-    @objc fileprivate func actionAll() {
-        print("菜单显示")
+    /* 菜单选项点击事件 */
+    @objc fileprivate func skip() {
+        self.bgStatus = .Null
+        opinionStatus()
+        // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
     }
+    
+    @objc fileprivate func ok() {
+        self.bgStatus = .Okay
+        opinionStatus()
+        // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
+    }
+    
+    @objc fileprivate func bad() {
+        self.bgStatus = .Bad
+        opinionStatus()
+        // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
+    }
+    
+    @objc fileprivate func remarks() {
+        // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
+    }
+    /* ------------ */
     
     // 让按钮具备成为第一响应者的资格
     override var canBecomeFirstResponder: Bool {
@@ -148,7 +185,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // 返回悬浮菜单中可以显示的选项
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         // 判断 action 中包含的各个事件的方法名称, 对比上了才能显示
-        if action == #selector(actionAll) {
+        if action == #selector(skip) || action == #selector(ok) || action == #selector(bad) || action == #selector(remarks) {
             return true
         }
         return false

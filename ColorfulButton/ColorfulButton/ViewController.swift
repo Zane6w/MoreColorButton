@@ -16,6 +16,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         colorBtn.buttonTapHandler = { (button) in
+            print(button.bgStatus)
         }
         
     }
