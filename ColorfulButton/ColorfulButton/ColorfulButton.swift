@@ -25,7 +25,7 @@ enum StatusType {
     static let allValues = [Null, Base, Bad, Okay, Good]
 }
 
-class ColorfulButton: UIButton {
+class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 属性
     /// 按钮背景颜色状态（默认: Base）
     var bgStatus: StatusType = .Base
@@ -34,9 +34,22 @@ class ColorfulButton: UIButton {
     /// 按钮点击事件
     var buttonTapHandler: TapHandler?
     
+    let menu = UIMenuController.shared
+    
     // MARK:- 方法
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        setupLongPress()
+        setupMenu()
+    }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
+        
+        // 点击时取消菜单的第一响应者并且隐藏菜单
+        self.resignFirstResponder()
+        menu.setMenuVisible(false, animated: true)
+        
         // 传递出去点击事件和参数
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
@@ -71,6 +84,7 @@ class ColorfulButton: UIButton {
         }
     }
     
+    // MARK:- 颜色处理
     /// 改变背景颜色
     /// - parameter color: 传入需要改变的颜色
     /// - parameter duration: 改变颜色动画所需时间（默认: 0.1s）
@@ -79,7 +93,7 @@ class ColorfulButton: UIButton {
             self.backgroundColor = color
         }
     }
-    
+
     /// 生成颜色（默认不透明）
     fileprivate func setColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat = 1.0) -> UIColor {
         return UIColor(red: red/255.0, green: green/255.0, blue: blue/255.0, alpha: alpha)
@@ -88,6 +102,56 @@ class ColorfulButton: UIButton {
     /// 生成颜色（相同的 RGB 值, 默认不透明）
     fileprivate func setColor(sameRGB: CGFloat, alpha: CGFloat = 1.0) -> UIColor {
         return UIColor(red: sameRGB/255.0, green: sameRGB/255.0, blue: sameRGB/255.0, alpha: alpha)
+    }
+    
+    // MARK:- 长按手势及其处理
+    /// 添加长按手势
+    fileprivate func setupLongPress() {
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(longPress:)))
+        longPressGesture.delegate = self
+        self.addGestureRecognizer(longPressGesture)
+    }
+    
+    @objc fileprivate func longPress(longPress: UILongPressGestureRecognizer) {
+        // 长按手势按下和抬起会调用两次
+        if longPress.state == .began {
+            print("longPress")
+            self.becomeFirstResponder()
+            
+            // 显示菜单
+            menu.setMenuVisible(true, animated: true)
+        }
+    }
+    
+    // MARK:- 菜单相关设置
+    /// 自定义菜单的选项和显示位置
+    fileprivate func setupMenu() {
+        let skipAction = UIMenuItem(title: "跳过", action: #selector(actionAll))
+        let okAction = UIMenuItem(title: "还行", action: #selector(actionAll))
+        let badAction = UIMenuItem(title: "差评", action: #selector(actionAll))
+        let remarksAction = UIMenuItem(title: "备注", action: #selector(actionAll))
+        menu.menuItems = [skipAction, okAction, badAction, remarksAction]
+        
+        // 菜单显示位置
+        menu.setTargetRect(self.bounds, in: self)
+    }
+    
+    @objc fileprivate func actionAll() {
+        print("菜单显示")
+    }
+    
+    // 让按钮具备成为第一响应者的资格
+    override var canBecomeFirstResponder: Bool {
+        return true
+    }
+    
+    // 返回悬浮菜单中可以显示的选项
+    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        // 判断 action 中包含的各个事件的方法名称, 对比上了才能显示
+        if action == #selector(actionAll) {
+            return true
+        }
+        return false
     }
     
 }
