@@ -33,13 +33,15 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     typealias TapHandler = (ColorfulButton) -> Void
     /// 按钮点击事件
     var buttonTapHandler: TapHandler?
+    var remarksTapHandler: TapHandler?
     
+    /// 菜单控制器
     let menu = UIMenuController.shared
     
     // MARK:- 方法
     override func awakeFromNib() {
         super.awakeFromNib()
-        setupLongPress()
+        setupLongPressGesture()
         setupMenuItems()
         opinionStatus()
     }
@@ -92,8 +94,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     // MARK:- 颜色处理
     /// 改变背景颜色
-    /// - parameter color: 传入需要改变的颜色
-    /// - parameter duration: 改变颜色动画所需时间（默认: 0.1s）
     fileprivate func changeColor(color: UIColor, duration: TimeInterval = 0.1) {
         UIView.animate(withDuration: duration) {
             self.backgroundColor = color
@@ -112,7 +112,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     // MARK:- 长按手势及其处理
     /// 添加长按手势
-    fileprivate func setupLongPress() {
+    fileprivate func setupLongPressGesture() {
         let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPress(longPress:)))
         longPressGesture.delegate = self
         self.addGestureRecognizer(longPressGesture)
@@ -171,8 +171,8 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     @objc fileprivate func remarks() {
         // 传递出去点击事件和参数
-        if buttonTapHandler != nil {
-            buttonTapHandler!(self)
+        if remarksTapHandler != nil {
+            remarksTapHandler!(self)
         }
     }
     /* ------------ */
@@ -190,5 +190,5 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         }
         return false
     }
-    
+
 }

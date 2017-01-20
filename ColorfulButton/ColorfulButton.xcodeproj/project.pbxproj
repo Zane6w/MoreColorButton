@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92FCEA31E320F690028EAE2 /* RemarksController.swift */; };
 		D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47941E307C7900971C1E /* AppDelegate.swift */; };
 		D9DF47971E307C7900971C1E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47961E307C7900971C1E /* ViewController.swift */; };
 		D9DF479A1E307C7900971C1E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9DF47981E307C7900971C1E /* Main.storyboard */; };
@@ -16,6 +17,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D92FCEA31E320F690028EAE2 /* RemarksController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemarksController.swift; sourceTree = "<group>"; };
 		D9DF47911E307C7900971C1E /* ColorfulButton.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorfulButton.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9DF47941E307C7900971C1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9DF47961E307C7900971C1E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -59,6 +61,7 @@
 				D9DF47941E307C7900971C1E /* AppDelegate.swift */,
 				D9DF47961E307C7900971C1E /* ViewController.swift */,
 				D9DF47A61E307DB300971C1E /* ColorfulButton.swift */,
+				D92FCEA31E320F690028EAE2 /* RemarksController.swift */,
 				D9DF47981E307C7900971C1E /* Main.storyboard */,
 				D9DF479B1E307C7900971C1E /* Assets.xcassets */,
 				D9DF479D1E307C7900971C1E /* LaunchScreen.storyboard */,
@@ -143,6 +146,7 @@
 				D9DF47A71E307DB300971C1E /* ColorfulButton.swift in Sources */,
 				D9DF47971E307C7900971C1E /* ViewController.swift in Sources */,
 				D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */,
+				D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,6 +308,7 @@
 				D9DF47A51E307C7900971C1E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
