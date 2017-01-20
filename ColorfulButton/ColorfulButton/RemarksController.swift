@@ -28,12 +28,15 @@ class RemarksController: UIViewController {
 
 }
 
+// MARK:- 界面设置
 extension RemarksController {
+    /// 界面设置
     fileprivate func setupInterface() {
         view.backgroundColor = .clear
         setuprRemarksView()
     }
     
+    /// 设置备注页面
     fileprivate func setuprRemarksView() {
         let viewWidth = UIScreen.main.bounds.width - 20 * 2
         let viewHeight = UIScreen.main.bounds.height * 0.5
@@ -47,35 +50,65 @@ extension RemarksController {
         view.addSubview(remarksView)
     }
     
+    /// 设置备注页面子控件
     fileprivate func setupRemarksViewSubviews() {
-        let cancelButton = addButton(title: "取消", action: #selector(cancel))
-        let cancelSize = cancelButton.frame.size
-        cancelButton.frame = CGRect(origin: CGPoint(x: 10, y: 10), size: cancelSize)
-        
-        let saveButton = addButton(title: "保存", action: #selector(save))
-        let saveSize = saveButton.frame.size
-        let saveX = remarksView.bounds.width - 10 - saveSize.width
-        saveButton.frame = CGRect(origin: CGPoint(x: saveX, y: 10), size: saveSize)
-        
-        let title = addButton(title: "添加备注", action: nil)
-        title.isUserInteractionEnabled = false
-        title.titleLabel?.font = UIFont.boldSystemFont(ofSize: 18)
-        let titleSize = title.frame.size
-        let titleX = remarksView.bounds.width * 0.5 - titleSize.width * 0.5
-        title.frame = CGRect(origin: CGPoint(x: titleX, y: 10), size: titleSize)
-        
-        let indicatorView = UIView(frame: CGRect(x: 0, y: 40, width: remarksView.bounds.width, height: 0.5))
-        indicatorView.backgroundColor = UIColor(red: 232/255.0, green: 232/255.0, blue: 232/255.0, alpha: 1.0)
-        remarksView.addSubview(indicatorView)
-        
-        let textView = UITextView(frame: CGRect(x: 0, y: indicatorView.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicatorView.frame.maxY - 8))
-        textView.font = UIFont.systemFont(ofSize: 18)
-        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
-        // 光标颜色
-        textView.tintColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
-        remarksView.addSubview(textView)
+        setActionButton()
+        setTitleLabel()
+        let splitLine = setSplitLine()
+        setTextView(indicator: splitLine)
     }
     
+    /// 操作按钮
+    fileprivate func setActionButton() {
+        // 取消
+        let cancelSize = 18
+        let cancelFrame = CGRect(x: 10, y: 12, width: cancelSize, height: cancelSize)
+        _ = addButton(frame: cancelFrame, image: UIImage(named: "Cancel")!, action: #selector(cancel))
+        
+        // 添加备注
+        let pinSize: CGFloat = 23
+        let pinX = remarksView.bounds.width - 10 - pinSize
+        let pinFrame = CGRect(x: pinX, y: 8, width: pinSize, height: pinSize)
+        _ = addButton(frame: pinFrame, image: UIImage(named: "Pin")!, action: #selector(pin))
+    }
+    
+    /// 创建添加按钮封装
+    fileprivate func addButton(frame: CGRect, image: UIImage, action: Selector) -> UIButton {
+        let actionButton = UIButton(type: .system)
+        actionButton.setImage(image, for: .normal)
+        actionButton.frame = frame
+        actionButton.addTarget(self, action: action, for: .touchUpInside)
+        remarksView.addSubview(actionButton)
+        
+        return actionButton
+    }
+    /* ---------- */
+    /// 设置标题
+    fileprivate func setTitleLabel() {
+        let titleLabel = UILabel()
+        titleLabel.text = "添加备注"
+        titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
+        titleLabel.frame = .zero
+        titleLabel.sizeToFit()
+        let titleSize = titleLabel.frame.size
+        let titleX = remarksView.bounds.width * 0.5 - titleSize.width * 0.5
+        titleLabel.frame = CGRect(origin: CGPoint(x: titleX, y: 10), size: titleSize)
+        remarksView.addSubview(titleLabel)
+    }
+    /* ---------- */
+    /// 设置分割线
+    fileprivate func setSplitLine() -> UIView {
+        let SplitLine = UIView(frame: CGRect(x: 0, y: 40, width: remarksView.bounds.width, height: 0.5))
+        SplitLine.backgroundColor = UIColor(red: 232/255.0, green: 232/255.0, blue: 232/255.0, alpha: 1.0)
+        remarksView.addSubview(SplitLine)
+        return SplitLine
+    }
+    /* ---------- */
+}
+
+// MARK:- 点击事件
+extension RemarksController {
+    /// 取消操作
     @objc fileprivate func cancel() {
         dismiss(animated: true, completion: nil)
         // 传递出去点击事件和参数
@@ -84,35 +117,26 @@ extension RemarksController {
         }
     }
     
-    @objc fileprivate func save() {
-        
+    /// 添加备注
+    @objc fileprivate func pin() {
+        dismiss(animated: true, completion: nil)
     }
     
-    /// 创建添加按钮封装
-    fileprivate func addButton(title: String, image: UIImage? = nil, action: Selector?) -> UIButton {
-        let actionButton = UIButton(type: .system)
-        actionButton.setTitle(title, for: .normal)
-        actionButton.setTitleColor(.black, for: .normal)
-        actionButton.titleLabel?.font = UIFont.systemFont(ofSize: 18)
-        
-        actionButton.setImage(image, for: .normal)
-        
-        actionButton.frame = .zero
-        actionButton.sizeToFit()
-        actionButton.titleEdgeInsets = UIEdgeInsets(top: -12.5, left: 0, bottom: 0, right: 0)
-        
-        if action != nil {
-            actionButton.addTarget(self, action: action!, for: .touchUpInside)
-        }
-        
-        remarksView.addSubview(actionButton)
-        
-        return actionButton
-    }
-
 }
 
-
+// MARK:- TextView 相关
+extension RemarksController {
+    /// 设置 TextView
+    fileprivate func setTextView(indicator: UIView) {
+        let textView = UITextView(frame: CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8))
+        textView.font = UIFont.systemFont(ofSize: 18)
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        // 光标颜色
+        textView.tintColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        remarksView.addSubview(textView)
+    }
+    
+}
 
 
 
