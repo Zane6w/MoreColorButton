@@ -10,11 +10,12 @@ import UIKit
 
 class RemarksController: UIViewController {
     // MARK:- 属性
-    var remarksView = UIView()
+    fileprivate var remarksView = UIView()
     
     typealias TapHandler = (RemarksController) -> Void
     /// 按钮点击事件
     var cancelTapHandler: TapHandler?
+    var pinTapHandler: TapHandler?
     
     // MARK:- 系统函数
     override func viewDidLoad() {
@@ -101,6 +102,7 @@ extension RemarksController {
         let SplitLine = UIView(frame: CGRect(x: 0, y: 40, width: remarksView.bounds.width, height: 0.5))
         SplitLine.backgroundColor = UIColor(red: 232/255.0, green: 232/255.0, blue: 232/255.0, alpha: 1.0)
         remarksView.addSubview(SplitLine)
+        
         return SplitLine
     }
     /* ---------- */
@@ -120,6 +122,9 @@ extension RemarksController {
     /// 添加备注
     @objc fileprivate func pin() {
         dismiss(animated: true, completion: nil)
+        if pinTapHandler != nil {
+            pinTapHandler!(self)
+        }
     }
     
 }

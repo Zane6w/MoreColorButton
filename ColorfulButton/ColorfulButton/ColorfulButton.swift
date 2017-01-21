@@ -38,12 +38,16 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     /// 菜单控制器
     let menu = UIMenuController.shared
     
+    /// 备注标识
+    var indicator = UIView()
+    
     // MARK:- 方法
     override func awakeFromNib() {
         super.awakeFromNib()
         setupLongPressGesture()
         setupMenuItems()
         opinionStatus()
+        setRemarksIndicator()
     }
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -73,6 +77,32 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         // 传递出去点击事件和参数
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
+        }
+        
+        opinionIndicatorColor()
+    }
+    
+    // MARK:- 备注小圆点
+    fileprivate func setRemarksIndicator() {
+        let indicatorSize: CGFloat = 6
+        let indicatorX: CGFloat = self.bounds.width * 0.5 - indicatorSize * 0.5
+        let indicatorY: CGFloat = self.bounds.height - 10 - indicatorSize
+        indicator.frame = CGRect(x: indicatorX, y: indicatorY, width: indicatorSize, height: indicatorSize)
+        indicator.backgroundColor = .white
+        indicator.layer.cornerRadius = indicatorSize * 0.5
+        indicator.layer.masksToBounds = true
+        
+        indicator.isHidden = true
+        
+        self.addSubview(indicator)
+    }
+    
+    /// 动态判断标识颜色
+    fileprivate func opinionIndicatorColor() {
+        if self.bgStatus != .Null {
+            indicator.backgroundColor = .white
+        } else {
+            indicator.backgroundColor = setColor(red: 88, green: 170, blue: 23)
         }
     }
     
@@ -149,6 +179,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
         }
+        opinionIndicatorColor()
     }
     
     @objc fileprivate func ok() {
@@ -158,6 +189,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
         }
+        opinionIndicatorColor()
     }
     
     @objc fileprivate func bad() {
@@ -167,6 +199,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
         }
+        opinionIndicatorColor()
     }
     
     @objc fileprivate func remarks() {
@@ -174,6 +207,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         if remarksTapHandler != nil {
             remarksTapHandler!(self)
         }
+        opinionIndicatorColor()
     }
     /* ------------ */
     

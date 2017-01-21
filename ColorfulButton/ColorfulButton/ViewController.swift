@@ -51,6 +51,12 @@ extension ViewController {
                 self.effectView?.alpha = 0
             }
         }
+        
+        remarksVC.pinTapHandler = { (vc) in
+            UIView.animate(withDuration: 0.3) {
+                self.effectView?.alpha = 0
+            }
+        }
 
     }
 }
