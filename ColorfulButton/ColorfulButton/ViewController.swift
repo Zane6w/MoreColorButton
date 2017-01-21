@@ -11,18 +11,32 @@ import UIKit
 class ViewController: UIViewController {
     // MARK:- 属性
     @IBOutlet weak var colorBtn: ColorfulButton!
+    @IBOutlet weak var topBtn: ColorfulButton!
+    @IBOutlet weak var bottomBtn: ColorfulButton!
+    var btnArr = [ColorfulButton]()
+    
+    var chooseBtn: ColorfulButton?
+    
     var effectView: UIVisualEffectView?
-    let remarksVC = RemarksController()
+    //var remarksVC: RemarksController?
+    
+    /// 标记触发的按钮
+    var sign: UIButton?
     
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        colorBtn.buttonTapHandler = { (button) in
-            print(button.bgStatus)
+        btnArr = [colorBtn, topBtn, bottomBtn]
+        
+        for btn in btnArr {
+            btn.buttonTapHandler = { (button) in
+                print(button.bgStatus)
+            }
         }
         
+        
         setupInterface()
+        
     }
 
     override func didReceiveMemoryWarning() {
@@ -35,37 +49,42 @@ class ViewController: UIViewController {
 extension ViewController {
     fileprivate func setupInterface() {
         // 添加备注时, 显示蒙版
-        colorBtn.remarksTapHandler = { (button) in
-            self.setupBlur()
-            UIView.animate(withDuration: 0.3, animations: {
-                self.effectView?.alpha = 1.0
-                self.remarksVC.modalPresentationStyle = .custom
-                self.present(self.remarksVC, animated: true, completion: nil)
-            })
-        }
-        
-        // 取消备注后隐藏蒙版
-        remarksVC.cancelTapHandler = { (vc) in
-            UIView.animate(withDuration: 0.3) {
-                self.effectView?.alpha = 0
-            }
-        }
-        
-        remarksVC.pinTapHandler = { (vc, text) in
-            UIView.animate(withDuration: 0.3) {
-                self.effectView?.alpha = 0
+        for btn in btnArr {
+            let remarksVC = RemarksController()
+            btn.remarksTapHandler = { (button) in
+                self.setupBlur()
+                self.chooseBtn = button
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.effectView?.alpha = 1.0
+                    remarksVC.modalPresentationStyle = .custom
+                    self.present(remarksVC, animated: true, completion: nil)
+                })
             }
             
-            self.colorBtn.dataStr = text
-            if text != "", text != nil {
-                self.colorBtn.indicator.isHidden = false
-                self.colorBtn.remarksTitle = "编辑备注"
-                self.colorBtn.reloadMenu()
-            } else {
-                self.colorBtn.remarksTitle = "添加备注"
-                self.colorBtn.indicator.isHidden = true
-                self.colorBtn.reloadMenu()
+            // 取消备注后隐藏蒙版
+            remarksVC.cancelTapHandler = { (vc) in
+                UIView.animate(withDuration: 0.3) {
+                    self.effectView?.alpha = 0
+                }
             }
+            
+            remarksVC.pinTapHandler = { (vc, text) in
+                UIView.animate(withDuration: 0.3) {
+                    self.effectView?.alpha = 0
+                }
+                
+                self.chooseBtn?.dataStr = text
+                if text != "", text != nil {
+                    self.chooseBtn?.indicator.isHidden = false
+                    self.chooseBtn?.remarksTitle = "编辑备注"
+                    self.chooseBtn?.reloadMenu()
+                } else {
+                    self.chooseBtn?.remarksTitle = "添加备注"
+                    self.chooseBtn?.indicator.isHidden = true
+                    self.chooseBtn?.reloadMenu()
+                }
+            }
+            
         }
 
     }

@@ -135,6 +135,7 @@ extension RemarksController {
         if pinTapHandler != nil {
             pinTapHandler!(self, textView.text)
         }
+        print(presentingViewController)
     }
     
 }

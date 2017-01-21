@@ -32,15 +32,43 @@
                                     <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 </state>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="h40-Vq-6VF" customClass="ColorfulButton" customModule="ColorfulButton" customModuleProvider="target">
+                                <rect key="frame" x="138" y="154" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="100" id="ARb-qz-oxj"/>
+                                    <constraint firstAttribute="width" constant="100" id="RVC-4r-eAj"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="23"/>
+                                <state key="normal" title="35">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="RLL-Sw-Pit" customClass="ColorfulButton" customModule="ColorfulButton" customModuleProvider="target">
+                                <rect key="frame" x="137" y="414" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="Mty-nt-KJi"/>
+                                    <constraint firstAttribute="height" constant="100" id="oee-RR-gRb"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="23"/>
+                                <state key="normal" title="37">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                            </button>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
+                            <constraint firstItem="h40-Vq-6VF" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="1T6-o3-LJC"/>
+                            <constraint firstItem="RLL-Sw-Pit" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="4Ue-8c-nMb"/>
+                            <constraint firstItem="7UL-ap-XX0" firstAttribute="top" secondItem="h40-Vq-6VF" secondAttribute="bottom" constant="30" id="8Kc-Wq-eKW"/>
+                            <constraint firstItem="RLL-Sw-Pit" firstAttribute="top" secondItem="7UL-ap-XX0" secondAttribute="bottom" constant="30" id="IQ4-N3-qj0"/>
                             <constraint firstItem="7UL-ap-XX0" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="a60-9b-ghB"/>
                             <constraint firstItem="7UL-ap-XX0" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="zRZ-RU-Tgq"/>
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="bottomBtn" destination="RLL-Sw-Pit" id="bnv-24-dCR"/>
                         <outlet property="colorBtn" destination="7UL-ap-XX0" id="1op-2x-tQP"/>
+                        <outlet property="topBtn" destination="h40-Vq-6VF" id="288-MF-SzJ"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
