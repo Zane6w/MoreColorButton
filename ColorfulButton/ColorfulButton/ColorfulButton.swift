@@ -41,8 +41,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     var buttonTapHandler: TapHandler?
     var remarksTapHandler: TapHandler?
     
-    /// "跳过"标题
-    var skipTitle: String = "跳过"
     /// "备注"标题
     var remarksTitle: String = "添加备注"
     
@@ -183,12 +181,12 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     fileprivate func setupMenuItems() {
         var skipAction = UIMenuItem()
         if self.bgStatus != .Null {
-            skipAction = UIMenuItem(title: skipTitle, action: #selector(skip))
+            skipAction = UIMenuItem(title: "跳过", action: #selector(skip))
         } else {
             skipAction = UIMenuItem(title: "撤销跳过", action: #selector(repealSkip))
         }
         
-        let okAction = UIMenuItem(title: "还行", action: #selector(ok))
+        let okAction = UIMenuItem(title: "一般", action: #selector(ok))
         let badAction = UIMenuItem(title: "差评", action: #selector(bad))
         let remarksAction = UIMenuItem(title: remarksTitle, action: #selector(remarks))
         menu.menuItems = [skipAction, okAction, badAction, remarksAction]
