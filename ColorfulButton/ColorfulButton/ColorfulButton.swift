@@ -196,36 +196,23 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     /* 菜单选项点击事件 */
     @objc fileprivate func skip() {
-        self.bgStatus = .Null
-        opinionStatus()
-        // 传递出去点击事件和参数
-        if buttonTapHandler != nil {
-            buttonTapHandler!(self)
-        }
-        opinionIndicatorColor()
+        chooseEvent(bgStatus: .Null)
     }
     
     @objc fileprivate func repealSkip() {
-        bgStatus = .Base
-        opinionStatus()
-        if buttonTapHandler != nil {
-            buttonTapHandler!(self)
-        }
-        opinionIndicatorColor()
+        chooseEvent(bgStatus: .Base)
     }
     
     @objc fileprivate func ok() {
-        self.bgStatus = .Okay
-        opinionStatus()
-        // 传递出去点击事件和参数
-        if buttonTapHandler != nil {
-            buttonTapHandler!(self)
-        }
-        opinionIndicatorColor()
+        chooseEvent(bgStatus: .Okay)
     }
     
     @objc fileprivate func bad() {
-        self.bgStatus = .Bad
+        chooseEvent(bgStatus: .Bad)
+    }
+    
+    fileprivate func chooseEvent(bgStatus: StatusType) {
+        self.bgStatus = bgStatus
         opinionStatus()
         // 传递出去点击事件和参数
         if buttonTapHandler != nil {
