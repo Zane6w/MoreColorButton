@@ -30,10 +30,21 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     /// 按钮背景颜色状态（默认: Base）
     var bgStatus: StatusType = .Base
     
+    /// 按钮标识
+    var id: Int = 0
+    
+    /// 按钮文字数据
+    var dataStr: String?
+    
     typealias TapHandler = (ColorfulButton) -> Void
     /// 按钮点击事件
     var buttonTapHandler: TapHandler?
     var remarksTapHandler: TapHandler?
+    
+    /// "跳过"标题
+    var skipTitle: String = "跳过"
+    /// "备注"标题
+    var remarksTitle: String = "添加备注"
     
     /// 菜单控制器
     let menu = UIMenuController.shared
@@ -52,7 +63,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
-        
         // 点击时取消菜单的第一响应者并且隐藏菜单
         self.resignFirstResponder()
         menu.setMenuVisible(false, animated: true)
@@ -156,18 +166,31 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
             // 菜单显示位置
             menu.setTargetRect(self.bounds, in: self)
             
+            reloadMenu()
+            
             // 显示菜单
             menu.setMenuVisible(true, animated: true)
         }
     }
     
     // MARK:- 菜单相关设置
+    /// 刷新菜单显示
+    func reloadMenu() {
+        setupMenuItems()
+    }
+    
     /// 自定义菜单的选项
     fileprivate func setupMenuItems() {
-        let skipAction = UIMenuItem(title: "跳过", action: #selector(skip))
+        var skipAction = UIMenuItem()
+        if self.bgStatus != .Null {
+            skipAction = UIMenuItem(title: skipTitle, action: #selector(skip))
+        } else {
+            skipAction = UIMenuItem(title: "撤销跳过", action: #selector(repealSkip))
+        }
+        
         let okAction = UIMenuItem(title: "还行", action: #selector(ok))
         let badAction = UIMenuItem(title: "差评", action: #selector(bad))
-        let remarksAction = UIMenuItem(title: "备注", action: #selector(remarks))
+        let remarksAction = UIMenuItem(title: remarksTitle, action: #selector(remarks))
         menu.menuItems = [skipAction, okAction, badAction, remarksAction]
     }
     
@@ -176,6 +199,15 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         self.bgStatus = .Null
         opinionStatus()
         // 传递出去点击事件和参数
+        if buttonTapHandler != nil {
+            buttonTapHandler!(self)
+        }
+        opinionIndicatorColor()
+    }
+    
+    @objc fileprivate func repealSkip() {
+        bgStatus = .Base
+        opinionStatus()
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
         }
@@ -219,7 +251,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // 返回悬浮菜单中可以显示的选项
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         // 判断 action 中包含的各个事件的方法名称, 对比上了才能显示
-        if action == #selector(skip) || action == #selector(ok) || action == #selector(bad) || action == #selector(remarks) {
+        if action == #selector(skip) || action == #selector(repealSkip) || action == #selector(ok) || action == #selector(bad) || action == #selector(remarks) {
             return true
         }
         return false

@@ -12,12 +12,20 @@ class RemarksController: UIViewController {
     // MARK:- 属性
     fileprivate var remarksView = UIView()
     
-    typealias TapHandler = (RemarksController) -> Void
+    typealias TapHandler = (RemarksController, String?) -> Void
     /// 按钮点击事件
     var cancelTapHandler: TapHandler?
     var pinTapHandler: TapHandler?
     
+    /// 内容区域
+    var textView = UITextView()
+    
     // MARK:- 系统函数
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        textView.becomeFirstResponder()
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupInterface()
@@ -112,18 +120,20 @@ extension RemarksController {
 extension RemarksController {
     /// 取消操作
     @objc fileprivate func cancel() {
+        textView.resignFirstResponder()
         dismiss(animated: true, completion: nil)
         // 传递出去点击事件和参数
         if cancelTapHandler != nil {
-            cancelTapHandler!(self)
+            cancelTapHandler!(self, nil)
         }
     }
     
     /// 添加备注
     @objc fileprivate func pin() {
+        textView.resignFirstResponder()
         dismiss(animated: true, completion: nil)
         if pinTapHandler != nil {
-            pinTapHandler!(self)
+            pinTapHandler!(self, textView.text)
         }
     }
     
@@ -133,7 +143,7 @@ extension RemarksController {
 extension RemarksController {
     /// 设置 TextView
     fileprivate func setTextView(indicator: UIView) {
-        let textView = UITextView(frame: CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8))
+        textView = UITextView(frame: CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8))
         textView.font = UIFont.systemFont(ofSize: 18)
         textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         // 光标颜色

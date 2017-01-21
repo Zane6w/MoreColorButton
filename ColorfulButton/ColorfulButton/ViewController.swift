@@ -36,7 +36,6 @@ extension ViewController {
     fileprivate func setupInterface() {
         // 添加备注时, 显示蒙版
         colorBtn.remarksTapHandler = { (button) in
-            print("remarks")
             self.setupBlur()
             UIView.animate(withDuration: 0.3, animations: {
                 self.effectView?.alpha = 1.0
@@ -52,9 +51,20 @@ extension ViewController {
             }
         }
         
-        remarksVC.pinTapHandler = { (vc) in
+        remarksVC.pinTapHandler = { (vc, text) in
             UIView.animate(withDuration: 0.3) {
                 self.effectView?.alpha = 0
+            }
+            
+            self.colorBtn.dataStr = text
+            if text != "", text != nil {
+                self.colorBtn.indicator.isHidden = false
+                self.colorBtn.remarksTitle = "编辑备注"
+                self.colorBtn.reloadMenu()
+            } else {
+                self.colorBtn.remarksTitle = "添加备注"
+                self.colorBtn.indicator.isHidden = true
+                self.colorBtn.reloadMenu()
             }
         }
 
