@@ -27,6 +27,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        print(SQLite.shared.dataSize())
         
         btnArr = [colorBtn, topBtn, bottomBtn]
         colorBtn.id = "111"

@@ -32,14 +32,14 @@ class SQLite: NSObject {
     /// - parameter tableName: 表名
     func openDB(pathName: String? = nil, tableName: String) -> Bool {
         if let pathName = pathName {
-            return open(pathName, tableName)
+            return packOpen(pathName, tableName)
         } else {
-            return open("data", tableName)
+            return packOpen("data", tableName)
         }
     }
     
     // 封装开启方法
-    fileprivate func open(_ pathName: String, _ tableName: String) -> Bool {
+    fileprivate func packOpen(_ pathName: String, _ tableName: String) -> Bool {
         var path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
         path = path + "/" + pathName + ".sqlite"
         dbPath = path
@@ -104,7 +104,7 @@ class SQLite: NSObject {
     // MARK: >>> 查询数据
     /// 查询所有数据
     /// - parameter inTable: 需要操作的表名
-    func query(inTable: String? = nil) -> [Any]? {
+    func queryAll(inTable: String? = nil) -> [Any]? {
         var sql: String?
         if inTable == nil {
             sql = "SELECT * FROM \(tableName!);"
@@ -112,7 +112,7 @@ class SQLite: NSObject {
             sql = "SELECT * FROM \(inTable!);"
         }
         
-        return packingQuery(sql: sql!)
+        return packQuery(sql: sql!)
     }
     
     /// 查询符合ID条件的数据
@@ -126,12 +126,12 @@ class SQLite: NSObject {
             sql = "SELECT * FROM \(inTable!) WHERE btnID = '\(id)';"
         }
         
-        return packingQuery(sql: sql!)
+        return packQuery(sql: sql!)
     }
     
     /// 封装查询
     /// - parameter sql: 查询语句
-    fileprivate func packingQuery(sql: String) -> [Any]? {
+    fileprivate func packQuery(sql: String) -> [Any]? {
         db?.open()
         
         let set = db?.executeQuery(sql, withArgumentsIn: nil)
@@ -155,30 +155,6 @@ class SQLite: NSObject {
         db?.close()
         
         return tempArray
-    }
-    
-    // MARK: >>> 删除数据 (全部)
-    /// 删除 (全部) 数据
-    /// - parameter inTable: 需要操作的表名
-    func delete(inTable: String? = nil) -> Bool {
-        db?.open()
-        // 删除所有 或 where ..... 来进行判断筛选删除
-        var sql: String?
-        if inTable == nil {
-            sql = "DELETE FROM \(tableName!);"
-        } else {
-            sql = "DELETE FROM \(inTable!);"
-        }
-        
-        if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
-            remind("删除成功")
-            db?.close()
-            return true
-        } else {
-            remind("删除失败")
-            db?.close()
-            return false
-        }
     }
     
     // MARK: >>> 更新数据
@@ -211,6 +187,71 @@ class SQLite: NSObject {
         }
     }
     
+    // MARK: >>> 删除数据 (全部)
+    /// 删除 (全部) 数据
+    /// - parameter inTable: 需要操作的表名
+    func deleteAll(inTable: String? = nil) -> Bool {
+        db?.open()
+        // 删除所有 或 where ..... 来进行判断筛选删除
+        var sql: String?
+        if inTable == nil {
+            sql = "DELETE FROM \(tableName!);"
+        } else {
+            sql = "DELETE FROM \(inTable!);"
+        }
+        
+        if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
+            remind("删除成功")
+            db?.close()
+            return true
+        } else {
+            remind("删除失败")
+            db?.close()
+            return false
+        }
+    }
+    
+}
+
+// MARK:- 本地数据大小
+extension SQLite {
+    /// 本地数据大小
+    func dataSize() -> String {
+        var dataSize: Int = 0
+        if let dbPath = dbPath {
+            if FileManager.default.fileExists(atPath: dbPath) {
+                if let dict = try? FileManager.default.attributesOfItem(atPath: dbPath) {
+                    dataSize += dict[FileAttributeKey("NSFileSize")] as! Int
+                }
+            }
+        }
+        
+        // KB
+        let sizeKB = dataSize / 1024
+        
+        if sizeKB < 1024 {
+            return "\(sizeKB)KB"
+        } else if sizeKB >= 1024, sizeKB < 1024 * 1024 {
+            // MB
+            let sizeMB = simplification(value: sizeKB)
+            return "\(String(format: "%.2f", sizeMB))MB"
+        } else {
+            // GB ~
+            let sizeHuge = simplification(value: sizeKB)
+            return "\(String(format: "%.2f", sizeHuge))GB"
+        }
+    }
+    
+    /// 简化显示
+    fileprivate func simplification(value: Int) -> Double {
+        if value < 1000 {
+            return Double(value)
+        } else {
+            let simplificationValue = Double(value) * 0.001
+            return simplificationValue
+        }
+    }
+
 }
 
 // MARK:- 自定义 print 打印
