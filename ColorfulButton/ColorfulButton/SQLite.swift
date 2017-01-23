@@ -64,7 +64,7 @@ class SQLite: NSObject {
     /// 创建表
     func createTable() -> Bool {
         db?.open()
-        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,js BLOB);"
+        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT);"
         
         if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
             remind("创建表成功")
@@ -81,23 +81,28 @@ class SQLite: NSObject {
     /// 插入数据
     /// - parameter objc: 传入非自定义类型
     /// - parameter inTable: 需要操作的表名
-    func insert(id: String, objc: Any, inTable: String? = nil) -> Bool {
+    func insert(id: String, status: String, remark: String, inTable: String? = nil) -> Bool {
         db?.open()
+        if (db?.beginTransaction())! {
+            print("事物开启")
+        }
         var sql: String?
         if inTable == nil {
-            sql = "INSERT INTO \(tableName!) (btnID,js) VALUES (?,?);"
+            sql = "INSERT INTO \(tableName!) (btnID,status,remark) VALUES (?,?,?);"
         } else {
-            sql = "INSERT INTO \(inTable!) (btnID,js) VALUES (?,?);"
+            sql = "INSERT INTO \(inTable!) (btnID,status,remark) VALUES (?,?,?);"
         }
         
-        let js = toJson(objc: objc)
-        
-        if (db?.executeUpdate(sql, withArgumentsIn: [id, js!]))! {
+        if (db?.executeUpdate(sql, withArgumentsIn: [id, status, remark]))! {
             remind("插入数据成功")
+            if (db?.commit())! {
+                print("YES")
+            }
             db?.close()
             return true
         } else {
             remind("插入数据失败")
+            db?.rollback()
             db?.close()
             return false
         }
@@ -144,12 +149,13 @@ class SQLite: NSObject {
         
         var tempArray = [Any]()
         while set!.next() {
-            let result = set?.object(forColumnName: "js")
-            if let result = result {
-                let objc = jsonToAny(json: result as! String)
-                if let objc = objc {
-                    tempArray.append(objc)
-                }
+            let id = set?.object(forColumnName: "btnID")
+            let status = set?.object(forColumnName: "status")
+            let remark = set?.object(forColumnName: "remark")
+            if let id = id, let status = status, let remark = remark {
+                tempArray.append(id)
+                tempArray.append(status)
+                tempArray.append(remark)
             }
         }
         
@@ -183,63 +189,35 @@ class SQLite: NSObject {
     }
     
     // MARK: >>> 更新数据
-    /// 更新数据
+    /// 根据ID更新某个数据
     /// - parameter newValue: 传入非自定义类型
     /// - parameter inTable: 需要操作的表名
-    func update(newValue: Any, inTable: String? = nil) -> Bool {
+    func update(id: String, status: String, remark: String, inTable: String? = nil) -> Bool {
         db?.open()
-        let js = toJson(objc: newValue)
+        db?.beginTransaction()
         // e.g.: 更新 ID = 6 的数据
         // "UPDATE \(tableName) SET js = '\(js!)'; WHERE ID = 6"
+        // "UPDATE \(tableName!) SET js = '\(js!)' WHERE btnID = 'zz123';"
         var sql: String?
         if inTable == nil {
-            sql = "UPDATE \(tableName!) SET js = '\(js!)';"
+            sql = "UPDATE \(tableName!) SET status = '\(status)', remark = '\(remark)' WHERE btnID = '\(id)';"
         } else {
-            sql = "UPDATE \(inTable!) SET js = '\(js!)';"
+            sql = "UPDATE \(inTable!) SET status = '\(status)', remark = '\(remark)' WHERE btnID = '\(id)';"
         }
         
         if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
             remind("修改成功")
+            db?.commit()
             db?.close()
             return true
         } else {
             remind("修改失败")
+            db?.rollback()
             db?.close()
             return false
         }
     }
     
-}
-
-// MARK:- JSON、ANY 转换
-extension SQLite {
-    /// **Any** 转换为 **JSON** 类型
-    /// - parameter objc: 传入非自定义类型
-    func toJson(objc: Any) -> String? {
-        let data = try? JSONSerialization.data(withJSONObject: objc, options: .prettyPrinted)
-        if let data = data {
-            return String(data: data, encoding: .utf8)
-        } else {
-            return nil
-        }
-    }
-    
-    /// **JSON** 转换为 **Any** 类型
-    /// - parameter json: String 类型数据
-    func jsonToAny(json: String) -> Any? {
-        let data = json.data(using: .utf8)
-        if let data = data {
-            let anyObjc = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
-            if let anyObjc = anyObjc {
-                return anyObjc
-            } else {
-                return nil
-            }
-        } else {
-            return nil
-        }
-    }
-
 }
 
 // MARK:- 自定义 print 打印

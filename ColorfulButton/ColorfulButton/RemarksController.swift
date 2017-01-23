@@ -28,6 +28,7 @@ class RemarksController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print(textView.text)
         setupInterface()
     }
 
@@ -140,7 +141,7 @@ extension RemarksController {
 }
 
 // MARK:- TextView 相关
-extension RemarksController {
+extension RemarksController: UITextViewDelegate {
     /// 设置 TextView
     fileprivate func setTextView(indicator: UIView) {
         textView = UITextView(frame: CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8))

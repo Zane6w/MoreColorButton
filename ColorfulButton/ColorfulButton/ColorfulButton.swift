@@ -9,17 +9,17 @@
 import UIKit
 
 /// 按钮背景颜色状态枚举
-enum StatusType {
+enum StatusType: String {
     /// 空值
-    case Null
+    case Null = "Null"
     /// 基本
-    case Base
+    case Base = "Base"
     /// 差
-    case Bad
+    case Bad = "Bad"
     /// 还行
-    case Okay
+    case Okay = "Okay"
     /// 好
-    case Good
+    case Good = "Good"
     
     /// 枚举数组
     static let allValues = [Null, Base, Bad, Okay, Good]
@@ -28,13 +28,18 @@ enum StatusType {
 class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 属性
     /// 按钮背景颜色状态（默认: Base）
-    var bgStatus: StatusType = .Base
+    var bgStatus: StatusType = .Base {
+        // 监听变量改变
+        didSet {
+            opinionStatus()
+        }
+    }
     
     /// 按钮标识
-    var id: Int = 0
+    var id: String?
     
     /// 按钮文字数据
-    var dataStr: String?
+    var dataStr: String? 
     
     typealias TapHandler = (ColorfulButton) -> Void
     /// 按钮点击事件

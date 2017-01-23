@@ -27,13 +27,52 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         btnArr = [colorBtn, topBtn, bottomBtn]
-        
+        colorBtn.id = "111"
+        topBtn.id = "222"
+        bottomBtn.id = "333"
+
         for btn in btnArr {
             btn.buttonTapHandler = { (button) in
-                print(button.bgStatus)
+                if button.dataStr != nil {
+                    _ = SQLite.shared.update(id: button.id!, status: "\(button.bgStatus)", remark: "\(button.dataStr!)", inTable: "t_buttons")
+                } else {
+                    _ = SQLite.shared.update(id: button.id!, status: "\(button.bgStatus)", remark: "", inTable: "t_buttons")
+                }
             }
+            
+            let array = SQLite.shared.query(inTable: "t_buttons", id: btn.id!)
+            if array?.count == 0 {
+                if btn.dataStr != nil {
+                    _ = SQLite.shared.insert(id: btn.id!, status: "\(btn.bgStatus)", remark: "\(btn.dataStr!)", inTable: "t_buttons")
+                } else {
+                    _ = SQLite.shared.insert(id: btn.id!, status: "\(btn.bgStatus)", remark: "", inTable: "t_buttons")
+                }
+            } else {
+                let array = SQLite.shared.query(inTable: "t_buttons", id: btn.id!)
+                print(array)
+                let id = array?[0] as! String
+                let status = array?[1] as! String
+                let remark = array?[2] as! String
+                print(status)
+                if btn.id! == id {
+                    let statusType = StatusType(rawValue: status)!
+                    btn.bgStatus = statusType
+                    
+                    if remark != "" {
+                        btn.indicator.isHidden = false
+                        btn.remarksTitle = "编辑备注"
+                        btn.reloadMenu()
+                    } else {
+                        btn.remarksTitle = "添加备注"
+                        btn.indicator.isHidden = true
+                        btn.reloadMenu()
+                    }
+                    
+                    btn.dataStr = remark
+                }
+            }
+            
         }
-        
         
         setupInterface()
         
@@ -54,8 +93,14 @@ extension ViewController {
             btn.remarksTapHandler = { (button) in
                 self.setupBlur()
                 self.chooseBtn = button
+                
+                if button.dataStr != nil {
+                    remarksVC.textView.text = button.dataStr!
+                }
+                
                 UIView.animate(withDuration: 0.3, animations: {
                     self.effectView?.alpha = 1.0
+                    
                     remarksVC.modalPresentationStyle = .custom
                     self.present(remarksVC, animated: true, completion: nil)
                 })
@@ -73,7 +118,10 @@ extension ViewController {
                     self.effectView?.alpha = 0
                 }
                 
-                self.chooseBtn?.dataStr = text
+                self.chooseBtn?.dataStr = text!
+                
+                _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
+                
                 if text != "", text != nil {
                     self.chooseBtn?.indicator.isHidden = false
                     self.chooseBtn?.remarksTitle = "编辑备注"
