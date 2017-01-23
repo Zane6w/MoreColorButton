@@ -8,16 +8,23 @@
 
 /* Begin PBXBuildFile section */
 		D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92FCEA31E320F690028EAE2 /* RemarksController.swift */; };
+		D92FCEC51E34A5290028EAE2 /* SQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92FCEC41E34A5290028EAE2 /* SQLite.swift */; };
 		D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47941E307C7900971C1E /* AppDelegate.swift */; };
 		D9DF47971E307C7900971C1E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47961E307C7900971C1E /* ViewController.swift */; };
 		D9DF479A1E307C7900971C1E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9DF47981E307C7900971C1E /* Main.storyboard */; };
 		D9DF479C1E307C7900971C1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9DF479B1E307C7900971C1E /* Assets.xcassets */; };
 		D9DF479F1E307C7900971C1E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9DF479D1E307C7900971C1E /* LaunchScreen.storyboard */; };
 		D9DF47A71E307DB300971C1E /* ColorfulButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47A61E307DB300971C1E /* ColorfulButton.swift */; };
+		F668BCF47830150070D5EF83 /* Pods_ColorfulButton.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73614058761DE5FFF11BC5D1 /* Pods_ColorfulButton.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		73614058761DE5FFF11BC5D1 /* Pods_ColorfulButton.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ColorfulButton.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		9E4C0E0ADA6A5D411373D0DE /* Pods-ColorfulButton.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorfulButton.release.xcconfig"; path = "Pods/Target Support Files/Pods-ColorfulButton/Pods-ColorfulButton.release.xcconfig"; sourceTree = "<group>"; };
+		BA01B64D620272A6D72D9267 /* Pods-ColorfulButton.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ColorfulButton.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ColorfulButton/Pods-ColorfulButton.debug.xcconfig"; sourceTree = "<group>"; };
 		D92FCEA31E320F690028EAE2 /* RemarksController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemarksController.swift; sourceTree = "<group>"; };
+		D92FCEC31E34A4BF0028EAE2 /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
+		D92FCEC41E34A5290028EAE2 /* SQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SQLite.swift; sourceTree = "<group>"; };
 		D9DF47911E307C7900971C1E /* ColorfulButton.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorfulButton.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9DF47941E307C7900971C1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9DF47961E307C7900971C1E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -33,17 +40,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F668BCF47830150070D5EF83 /* Pods_ColorfulButton.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		5BB6FE4E6245F0AA45A6B4AD /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				73614058761DE5FFF11BC5D1 /* Pods_ColorfulButton.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		8921D3237E461261BDA0A6AB /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				BA01B64D620272A6D72D9267 /* Pods-ColorfulButton.debug.xcconfig */,
+				9E4C0E0ADA6A5D411373D0DE /* Pods-ColorfulButton.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		D9DF47881E307C7900971C1E = {
 			isa = PBXGroup;
 			children = (
 				D9DF47931E307C7900971C1E /* ColorfulButton */,
 				D9DF47921E307C7900971C1E /* Products */,
+				8921D3237E461261BDA0A6AB /* Pods */,
+				5BB6FE4E6245F0AA45A6B4AD /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -66,6 +93,8 @@
 				D9DF479B1E307C7900971C1E /* Assets.xcassets */,
 				D9DF479D1E307C7900971C1E /* LaunchScreen.storyboard */,
 				D9DF47A01E307C7900971C1E /* Info.plist */,
+				D92FCEC41E34A5290028EAE2 /* SQLite.swift */,
+				D92FCEC31E34A4BF0028EAE2 /* Bridge.h */,
 			);
 			path = ColorfulButton;
 			sourceTree = "<group>";
@@ -77,9 +106,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = D9DF47A31E307C7900971C1E /* Build configuration list for PBXNativeTarget "ColorfulButton" */;
 			buildPhases = (
+				1C93B54913FDF20C6EDCB16A /* [CP] Check Pods Manifest.lock */,
 				D9DF478D1E307C7900971C1E /* Sources */,
 				D9DF478E1E307C7900971C1E /* Frameworks */,
 				D9DF478F1E307C7900971C1E /* Resources */,
+				7D37CC09410530C3EF4A454D /* [CP] Embed Pods Frameworks */,
+				C9404300A57E6C5E2E35EC12 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -138,12 +170,61 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		1C93B54913FDF20C6EDCB16A /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		7D37CC09410530C3EF4A454D /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ColorfulButton/Pods-ColorfulButton-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		C9404300A57E6C5E2E35EC12 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-ColorfulButton/Pods-ColorfulButton-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		D9DF478D1E307C7900971C1E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				D9DF47A71E307DB300971C1E /* ColorfulButton.swift in Sources */,
+				D92FCEC51E34A5290028EAE2 /* SQLite.swift in Sources */,
 				D9DF47971E307C7900971C1E /* ViewController.swift in Sources */,
 				D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */,
 				D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */,
@@ -265,6 +346,7 @@
 		};
 		D9DF47A41E307C7900971C1E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BA01B64D620272A6D72D9267 /* Pods-ColorfulButton.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 4UH48N8U4B;
@@ -272,12 +354,14 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhi.ColorfulButton;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = ColorfulButton/Bridge.h;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		D9DF47A51E307C7900971C1E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9E4C0E0ADA6A5D411373D0DE /* Pods-ColorfulButton.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 4UH48N8U4B;
@@ -285,6 +369,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.zhi.ColorfulButton;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = ColorfulButton/Bridge.h;
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
