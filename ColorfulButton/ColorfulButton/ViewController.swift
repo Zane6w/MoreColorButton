@@ -61,15 +61,7 @@ class ViewController: UIViewController {
                     let statusType = StatusType(rawValue: status)!
                     btn.bgStatus = statusType
                     
-                    if remark != "" {
-                        btn.indicator.isHidden = false
-                        btn.remarksTitle = "编辑备注"
-                        btn.reloadMenu()
-                    } else {
-                        btn.remarksTitle = "添加备注"
-                        btn.indicator.isHidden = true
-                        btn.reloadMenu()
-                    }
+                    opinionIndicator(button: btn, text: remark)
                     
                     btn.dataStr = remark
                 }
@@ -125,20 +117,28 @@ extension ViewController {
                 
                 _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
                 
-                if text != "", text != nil {
-                    self.chooseBtn?.indicator.isHidden = false
-                    self.chooseBtn?.remarksTitle = "编辑备注"
-                    self.chooseBtn?.reloadMenu()
-                } else {
-                    self.chooseBtn?.remarksTitle = "添加备注"
-                    self.chooseBtn?.indicator.isHidden = true
-                    self.chooseBtn?.reloadMenu()
+                if let text = text, let chooseBtn = self.chooseBtn {
+                    self.opinionIndicator(button: chooseBtn, text: text)
                 }
             }
             
         }
 
     }
+    
+    /// 按钮备注标识与菜单名称
+    fileprivate func opinionIndicator(button: ColorfulButton, text: String) {
+        if text != "" {
+            button.indicator.isHidden = false
+            button.remarksTitle = "编辑备注"
+            button.reloadMenu()
+        } else {
+            button.remarksTitle = "添加备注"
+            button.indicator.isHidden = true
+            button.reloadMenu()
+        }
+    }
+    
 }
 
 // MARK:- 手势相关

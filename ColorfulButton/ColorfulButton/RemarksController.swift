@@ -10,7 +10,7 @@ import UIKit
 
 class RemarksController: UIViewController {
     // MARK:- 属性
-    fileprivate var remarksView = UIView()
+    fileprivate let remarksView = UIView()
     
     typealias TapHandler = (RemarksController, String?) -> Void
     /// 按钮点击事件

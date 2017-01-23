@@ -50,7 +50,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     var remarksTitle: String = "添加备注"
     
     /// 菜单控制器
-    let menu = UIMenuController.shared
+    fileprivate let menu = UIMenuController.shared
     
     /// 备注标识
     var indicator = UIView()

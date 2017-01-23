@@ -58,7 +58,7 @@ class SQLite: NSObject {
     
     // MARK: >>> 创建表
     /// 创建表
-    func createTable() -> Bool {
+    fileprivate func createTable() -> Bool {
         db?.open()
         let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT);"
         
@@ -79,9 +79,8 @@ class SQLite: NSObject {
     /// - parameter inTable: 需要操作的表名
     func insert(id: String, status: String, remark: String, inTable: String? = nil) -> Bool {
         db?.open()
-        if (db?.beginTransaction())! {
-            print("事物开启")
-        }
+        db?.beginTransaction()
+        
         var sql: String?
         if inTable == nil {
             sql = "INSERT INTO \(tableName!) (btnID,status,remark) VALUES (?,?,?);"
@@ -91,9 +90,7 @@ class SQLite: NSObject {
         
         if (db?.executeUpdate(sql, withArgumentsIn: [id, status, remark]))! {
             remind("插入数据成功")
-            if (db?.commit())! {
-                print("YES")
-            }
+            db?.commit()
             db?.close()
             return true
         } else {
@@ -232,7 +229,7 @@ extension SQLite {
     /// - parameter methodName: 打印所在文件的类名
     /// - parameter lineNumber: 打印事件发生在哪一行
     /// - parameter isDetail: 是否打印详细信息 (默认: true)
-    func printDBug<T>(_ info: T, fileName: String = #file, methodName: String = #function, lineNumber: Int = #line, isDetail: Bool = true) {
+    fileprivate func printDBug<T>(_ info: T, fileName: String = #file, methodName: String = #function, lineNumber: Int = #line, isDetail: Bool = true) {
         let file = (fileName as NSString).pathComponents.last!
         #if DEBUG
             if isDetail {
