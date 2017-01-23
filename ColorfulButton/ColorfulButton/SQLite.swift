@@ -9,10 +9,6 @@
 import UIKit
 import FMDB
 
-/**
- * 将传入的不包含"自定义类型"的数组或字典, JSON化, 并存储于 "SQL数据库" 中, 方便存取.
- */
-
 class SQLite: NSObject {
     // MARK:- 属性
     static let shared = SQLite()

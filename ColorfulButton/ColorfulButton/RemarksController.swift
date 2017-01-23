@@ -18,7 +18,7 @@ class RemarksController: UIViewController {
     var pinTapHandler: TapHandler?
     
     /// 内容区域
-    var textView = UITextView()
+    let textView = UITextView()
     
     // MARK:- 系统函数
     override func viewWillAppear(_ animated: Bool) {
@@ -28,7 +28,6 @@ class RemarksController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print(textView.text)
         setupInterface()
     }
 
@@ -56,16 +55,15 @@ extension RemarksController {
         remarksView.backgroundColor = .white
         
         setupRemarksViewSubviews()
-        
         view.addSubview(remarksView)
     }
     
     /// 设置备注页面子控件
     fileprivate func setupRemarksViewSubviews() {
-        setActionButton()
-        setTitleLabel()
         let splitLine = setSplitLine()
         setTextView(indicator: splitLine)
+        setActionButton()
+        setTitleLabel()
     }
     
     /// 操作按钮
@@ -141,10 +139,10 @@ extension RemarksController {
 }
 
 // MARK:- TextView 相关
-extension RemarksController: UITextViewDelegate {
+extension RemarksController {
     /// 设置 TextView
     fileprivate func setTextView(indicator: UIView) {
-        textView = UITextView(frame: CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8))
+        textView.frame = CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8)
         textView.font = UIFont.systemFont(ofSize: 18)
         textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         // 光标颜色
@@ -153,8 +151,3 @@ extension RemarksController: UITextViewDelegate {
     }
     
 }
-
-
-
-
-

@@ -26,11 +26,14 @@ class ViewController: UIViewController {
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        
         btnArr = [colorBtn, topBtn, bottomBtn]
         colorBtn.id = "111"
         topBtn.id = "222"
         bottomBtn.id = "333"
-
+        
+        
         for btn in btnArr {
             btn.buttonTapHandler = { (button) in
                 if button.dataStr != nil {
@@ -97,7 +100,7 @@ extension ViewController {
                 if button.dataStr != nil {
                     remarksVC.textView.text = button.dataStr!
                 }
-                
+                                
                 UIView.animate(withDuration: 0.3, animations: {
                     self.effectView?.alpha = 1.0
                     
