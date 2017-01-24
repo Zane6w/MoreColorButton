@@ -54,7 +54,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     /// 备注标识
     var indicator = UIView()
-    
+    /// 语言判断
     var isHanLanguage: Bool {
         // 判断系统当前语言
         let languages = Locale.preferredLanguages

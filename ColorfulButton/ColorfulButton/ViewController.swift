@@ -22,7 +22,7 @@ class ViewController: UIViewController {
     
     /// 标记触发的按钮
     var sign: UIButton?
-    
+    /// 语言判断
     var isHanLanguage: Bool {
         // 判断系统当前语言
         let languages = Locale.preferredLanguages
@@ -86,9 +86,7 @@ class ViewController: UIViewController {
         
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
+    
     
 }
 
