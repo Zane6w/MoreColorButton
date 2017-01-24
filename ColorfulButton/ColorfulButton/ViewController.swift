@@ -23,6 +23,18 @@ class ViewController: UIViewController {
     /// 标记触发的按钮
     var sign: UIButton?
     
+    var isHanLanguage: Bool {
+        // 判断系统当前语言
+        let languages = Locale.preferredLanguages
+        let currentLanguage = languages[0]
+        // 判断是否是中文, 根据语言设置字体样式
+        if currentLanguage.hasPrefix("zh") {
+            return true
+        } else {
+            return false
+        }
+    }
+    
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -77,7 +89,7 @@ class ViewController: UIViewController {
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
-
+    
 }
 
 // MARK:- 界面设置
@@ -133,10 +145,7 @@ extension ViewController {
             button.indicator.isHidden = false
             
             // 判断系统当前语言
-            let languages = Locale.preferredLanguages
-            let currentLanguage = languages[0]
-            // 判断是否是中文, 根据语言设置字体样式
-            if currentLanguage.hasPrefix("zh") {
+            if isHanLanguage {
                 button.remarksTitle = "编辑备注"
             } else {
                 button.remarksTitle = "Edit Note"
@@ -146,15 +155,11 @@ extension ViewController {
         } else {
             
             // 判断系统当前语言
-            let languages = Locale.preferredLanguages
-            let currentLanguage = languages[0]
-            // 判断是否是中文, 根据语言设置字体样式
-            if currentLanguage.hasPrefix("zh") {
+            if isHanLanguage {
                 button.remarksTitle = "添加备注"
             } else {
                 button.remarksTitle = "Add Note"
             }
-            
             
             button.indicator.isHidden = true
             button.reloadMenu()
