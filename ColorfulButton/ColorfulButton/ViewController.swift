@@ -53,7 +53,7 @@ class ViewController: UIViewController {
                 }
             } else {
                 let array = SQLite.shared.query(inTable: "t_buttons", id: btn.id!)
-                print(array)
+                
                 let id = array?[0] as! String
                 let status = array?[1] as! String
                 let remark = array?[2] as! String
@@ -131,10 +131,31 @@ extension ViewController {
     fileprivate func opinionIndicator(button: ColorfulButton, text: String) {
         if text != "" {
             button.indicator.isHidden = false
-            button.remarksTitle = "编辑备注"
+            
+            // 判断系统当前语言
+            let languages = Locale.preferredLanguages
+            let currentLanguage = languages[0]
+            // 判断是否是中文, 根据语言设置字体样式
+            if currentLanguage.hasPrefix("zh") {
+                button.remarksTitle = "编辑备注"
+            } else {
+                button.remarksTitle = "Edit Note"
+            }
+            
             button.reloadMenu()
         } else {
-            button.remarksTitle = "添加备注"
+            
+            // 判断系统当前语言
+            let languages = Locale.preferredLanguages
+            let currentLanguage = languages[0]
+            // 判断是否是中文, 根据语言设置字体样式
+            if currentLanguage.hasPrefix("zh") {
+                button.remarksTitle = "添加备注"
+            } else {
+                button.remarksTitle = "Add Note"
+            }
+            
+            
             button.indicator.isHidden = true
             button.reloadMenu()
         }

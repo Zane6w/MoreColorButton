@@ -47,7 +47,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     var remarksTapHandler: TapHandler?
     
     /// "备注"标题
-    var remarksTitle: String = "添加备注"
+    var remarksTitle: String?
     
     /// 菜单控制器
     fileprivate let menu = UIMenuController.shared
@@ -58,6 +58,19 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 方法
     override func awakeFromNib() {
         super.awakeFromNib()
+        
+        if remarksTitle == nil {
+            // 判断系统当前语言
+            let languages = Locale.preferredLanguages
+            let currentLanguage = languages[0]
+            // 判断是否是中文, 根据语言设置字体样式
+            if currentLanguage.hasPrefix("zh") {
+                remarksTitle = "添加备注"
+            } else {
+                remarksTitle = "Add Note"
+            }
+        }
+        
         setupLongPressGesture()
         setupMenuItems()
         opinionStatus()
@@ -185,15 +198,37 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     /// 自定义菜单的选项
     fileprivate func setupMenuItems() {
         var skipAction = UIMenuItem()
-        if self.bgStatus != .Null {
-            skipAction = UIMenuItem(title: "跳过", action: #selector(skip))
+        
+        var skipStr: String?
+        var undoStr: String?
+        var okStr: String?
+        var badStr: String?
+        
+        // 判断系统当前语言
+        let languages = Locale.preferredLanguages
+        let currentLanguage = languages[0]
+        // 判断是否是中文, 根据语言设置字体样式
+        if currentLanguage.hasPrefix("zh") {
+            skipStr = "跳过"
+            undoStr = "撤销跳过"
+            okStr = "一般"
+            badStr = "差评"
         } else {
-            skipAction = UIMenuItem(title: "撤销跳过", action: #selector(repealSkip))
+            skipStr = "Skip"
+            undoStr = "Undo Skip"
+            okStr = "Ok"
+            badStr = "Bad"
         }
         
-        let okAction = UIMenuItem(title: "一般", action: #selector(ok))
-        let badAction = UIMenuItem(title: "差评", action: #selector(bad))
-        let remarksAction = UIMenuItem(title: remarksTitle, action: #selector(remarks))
+        if self.bgStatus != .Null {
+            skipAction = UIMenuItem(title: skipStr!, action: #selector(skip))
+        } else {
+            skipAction = UIMenuItem(title: undoStr!, action: #selector(repealSkip))
+        }
+        
+        let okAction = UIMenuItem(title: okStr!, action: #selector(ok))
+        let badAction = UIMenuItem(title: badStr!, action: #selector(bad))
+        let remarksAction = UIMenuItem(title: remarksTitle!, action: #selector(remarks))
         menu.menuItems = [skipAction, okAction, badAction, remarksAction]
     }
     

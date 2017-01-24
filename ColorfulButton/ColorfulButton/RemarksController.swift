@@ -94,7 +94,17 @@ extension RemarksController {
     /// 设置标题
     fileprivate func setTitleLabel() {
         let titleLabel = UILabel()
-        titleLabel.text = "添加备注"
+        
+        // 判断系统当前语言
+        let languages = Locale.preferredLanguages
+        let currentLanguage = languages[0]
+        // 判断是否是中文, 根据语言设置字体样式
+        if currentLanguage.hasPrefix("zh") {
+            titleLabel.text = "添加备注"
+        } else {
+            titleLabel.text = "Add Note"
+        }
+
         titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
         titleLabel.frame = .zero
         titleLabel.sizeToFit()
