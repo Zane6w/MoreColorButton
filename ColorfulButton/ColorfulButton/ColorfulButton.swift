@@ -71,6 +71,9 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     override func awakeFromNib() {
         super.awakeFromNib()
         
+        self.layer.cornerRadius = self.bounds.width * 0.5
+        self.layer.masksToBounds = true
+        
         if remarksTitle == nil {
             // 判断系统当前语言
             if isHanLanguage {
