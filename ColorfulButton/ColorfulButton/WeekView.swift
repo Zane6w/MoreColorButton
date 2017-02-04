@@ -49,6 +49,8 @@ class WeekView: UIView {
         
         setBlur()
         
+        let chineseWeekday = Calendar.current.component(.weekday, from: Date()) - 1
+        
         let buttonWidth: CGFloat = self.bounds.width / 7
         var buttonX: CGFloat = 0
         for i in 0..<7 {
@@ -58,6 +60,10 @@ class WeekView: UIView {
             buttonX += buttonWidth
             
             weekButton.setTitle(weekTitles[i], for: .normal)
+
+            if (i + 1) == chineseWeekday {
+                weekButton.isSelected = true
+            }
             
             self.addSubview(weekButton)
         }

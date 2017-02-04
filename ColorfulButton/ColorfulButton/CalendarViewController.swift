@@ -10,6 +10,7 @@ import UIKit
 
 private let collectionCellIdentifier = "collectionCell"
 private let headerIdentifier = "headerCell"
+private let normalCell = "normalCell"
 
 class CalendarViewController: UIViewController {
     // MARK:- 属性
@@ -53,11 +54,14 @@ class CalendarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupInterface()
+
         collectionView?.dataSource = self
         collectionView?.delegate = self
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
 
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
+        
+        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: normalCell)
         
         weekTitleView.frame = CGRect(x: 0, y: 64, width: weekTitleView.bounds.width, height: weekTitleView.bounds.height)
         view.addSubview(weekTitleView)
@@ -129,18 +133,27 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 30
+        return DateTool.shared.getDayOfMonth()[section]
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
+
+        let firstdayOfWeek = DateTool.shared.getFirstMonthDayOfWeek()[indexPath.section]
         
-        cell.planButton?.id = "\(year)\(indexPath.section)\(indexPath.row)"
-        EventManager.shared.accessButton(button: cell.planButton!)
-
-        setupInterface(btn: cell.planButton!)
-
-        return cell
+        if firstdayOfWeek != 0, indexPath.row < firstdayOfWeek - 1 {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
+            
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
+            cell.planButton?.id = "\(year)\(indexPath.section)\(indexPath.row)"
+            EventManager.shared.accessButton(button: cell.planButton!)
+            
+            setupInterface(btn: cell.planButton!)
+            
+            return cell
+        }
+        
     }
     
     // headerView 尺寸
