@@ -53,7 +53,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     fileprivate let menu = UIMenuController.shared
     
     /// 备注标识
-    var indicator = UIView()
+    let indicator = UIView()
     /// 语言判断
     var isHanLanguage: Bool {
         // 判断系统当前语言
@@ -70,7 +70,20 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 方法
     override func awakeFromNib() {
         super.awakeFromNib()
-        
+        initButton()
+    }
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        initButton()
+    }
+    
+    required init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    /// 初始化方法
+    fileprivate func initButton() {
         self.layer.cornerRadius = self.bounds.width * 0.5
         self.layer.masksToBounds = true
         
