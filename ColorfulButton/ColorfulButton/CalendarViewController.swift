@@ -16,6 +16,8 @@ class CalendarViewController: UIViewController {
     
     fileprivate let layout = UICollectionViewFlowLayout()
     fileprivate var collectionView: UICollectionView?
+    /// 头部高度
+    fileprivate let headerHeight: CGFloat = 40
     
     /// **collectionView** 每个 **cell** 上下左右的间距
     fileprivate let cellItemSpace: CGFloat = 3
@@ -27,6 +29,8 @@ class CalendarViewController: UIViewController {
     var chooseBtn: ColorfulButton?
     
     var effectView: UIVisualEffectView?
+    /// 月份标识数组
+    fileprivate var months = [String]()
     
     /// 语言判断
     var isHanLanguage: Bool {
@@ -52,11 +56,8 @@ class CalendarViewController: UIViewController {
         collectionView?.dataSource = self
         collectionView?.delegate = self
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
-        
-//        collectionView?.register(UINib(nibName: "CaCell", bundle: nil), forCellWithReuseIdentifier: collectionCellIdentifier)
+
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
-        
-//        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
         
         weekTitleView.frame = CGRect(x: 0, y: 64, width: weekTitleView.bounds.width, height: weekTitleView.bounds.height)
         view.addSubview(weekTitleView)
@@ -76,22 +77,45 @@ class CalendarViewController: UIViewController {
             naviBarBottomLine?.isHidden = true
         }
         
-        let frame = CGRect(x: 0, y: weekTitleView.bounds.height, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height - weekTitleView.bounds.height)
+        
+        // 右上角年份标识
+        let yearButton = UIButton(type: .system)
+        yearButton.setTitle("\(Calendar.current.component(.year, from: Date()))", for: .normal)
+        yearButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 16)
+        yearButton.sizeToFit()
+        yearButton.isSelected = true
+        yearButton.tintColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: yearButton)
+        
+        
+        let frame = CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         collectionView = UICollectionView(frame: frame, collectionViewLayout: layout)
         collectionView?.backgroundColor = .white
         collectionView?.collectionViewLayout = layout
+        collectionView?.showsVerticalScrollIndicator = false
+        collectionView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: 0, right: 0)
+        
         
         // 每个cell的尺寸
-        let oneItemSize: CGFloat = (collectionView?.bounds.width)! / itemsNumber - cellItemSpace
+        let oneItemSize: CGFloat = (collectionView?.bounds.width)! / itemsNumber - cellItemSpace * 2
         let itemSize = CGSize(width: oneItemSize, height: oneItemSize)
         layout.itemSize = itemSize
         layout.minimumInteritemSpacing = cellItemSpace // 左右间隔
         layout.minimumLineSpacing = cellItemSpace // 上下间隔
         // 页眉的尺寸
-        layout.headerReferenceSize = CGSize(width: UIScreen.main.bounds.width, height: 40)
-//        layout.sectionInset = UIEdgeInsets(top: 0, left: 6, bottom: 0, right: 6)
+        layout.headerReferenceSize = CGSize(width: UIScreen.main.bounds.width, height: headerHeight)
+        layout.sectionInset = UIEdgeInsets(top: 0, left: cellItemSpace, bottom: 0, right: cellItemSpace)
         
         view.addSubview(collectionView!)
+        
+        
+        if isHanLanguage {
+            for i in 1...12 {
+                months.append("\(i)月")
+            }
+        } else {
+            months = ["January", "February", " March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+        }
     }
     
 }
@@ -121,7 +145,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     
     // headerView 尺寸
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: UIScreen.main.bounds.width, height: 40)
+        return CGSize(width: UIScreen.main.bounds.width, height: headerHeight)
     }
     
     // 自定义 headerView
@@ -131,7 +155,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         
         if kind == UICollectionElementKindSectionHeader {
             reusableView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerIdentifier, for: indexPath) as! CollectionReusableHeaderView
-            (reusableView as! CollectionReusableHeaderView).title.text = "text"
+            (reusableView as! CollectionReusableHeaderView).title.text = months[indexPath.section]
         }
         
         return reusableView!
@@ -243,8 +267,10 @@ class CollectionReusableHeaderView: UICollectionReusableView {
     // MARK: >>> 自定义构造方法
     override init(frame: CGRect) {
         super.init(frame: frame)
-        let titleX: CGFloat = 10
-        title.frame = CGRect(x: titleX, y: 0, width: bounds.width - titleX, height: 40)
+        
+        let titleX: CGFloat = 8
+        title.frame = CGRect(x: titleX, y: 0, width: self.bounds.width - titleX, height: self.bounds.height)
+        
         addSubview(title)
     }
     
