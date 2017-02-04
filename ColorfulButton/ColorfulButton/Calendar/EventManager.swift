@@ -39,6 +39,7 @@ class EventManager: NSObject {
     func accessButton(button: ColorfulButton) {
         // 按钮点击事件
         button.buttonTapHandler = { (operatingButton) in
+            print("id -> \(operatingButton.id!)")
             if operatingButton.dataStr != nil {
                 _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
             } else {
@@ -49,6 +50,8 @@ class EventManager: NSObject {
         // 按钮所有状态参数的存取
         let dataArray = SQLite.shared.query(inTable: tableName, id: button.id!)
         if dataArray?.count == 0 {
+            // 新的按钮要初始化状态, 防止 cell 复用导致的数据混乱.
+            button.restore()
             if button.dataStr != nil {
                 _ = SQLite.shared.insert(id: button.id!, status: "\(button.bgStatus)", remark: "\(button.dataStr!)", inTable: tableName)
             } else {

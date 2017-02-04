@@ -53,7 +53,7 @@ class CalendarViewController: UIViewController {
         collectionView?.delegate = self
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
         
-//        collectionView?.register(UINib(nibName: "CalendarCell", bundle: nil), forCellWithReuseIdentifier: collectionCellIdentifier)
+//        collectionView?.register(UINib(nibName: "CaCell", bundle: nil), forCellWithReuseIdentifier: collectionCellIdentifier)
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
         
 //        collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
@@ -112,11 +112,10 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
         
         cell.planButton?.id = "\(year)\(indexPath.section)\(indexPath.row)"
-        
         EventManager.shared.accessButton(button: cell.planButton!)
-        
+
         setupInterface(btn: cell.planButton!)
-        
+
         return cell
     }
     

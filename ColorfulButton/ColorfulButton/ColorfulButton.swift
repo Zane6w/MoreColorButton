@@ -102,6 +102,13 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         setRemarksIndicator()
     }
     
+    /// 恢复按钮到初始化状态
+    func restore() {
+        self.bgStatus = .Base
+        self.dataStr = ""
+        self.indicator.isHidden = true
+    }
+    
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
         // 点击时取消菜单的第一响应者并且隐藏菜单
