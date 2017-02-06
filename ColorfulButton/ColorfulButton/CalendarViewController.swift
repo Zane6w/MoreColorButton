@@ -153,7 +153,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        print("cellfor")
+        
         let firstday = firstdayOfWeek[indexPath.section]
         
         if firstday != 0, indexPath.row < firstday {
@@ -162,7 +162,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
-
+        
             cell.planButton?.buttonTapHandler = { (operatingButton) in
                 if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
                     _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
@@ -194,17 +194,13 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             cell.model = self.models?[indexPath.section][indexPath.row - firstday]
             
             DispatchQueue.main.async {
-                //self.setupInterface(btn: cell.planButton!)
+                self.setupInterface(btn: cell.planButton!)
             }
             
             return cell
         }
     }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-
-    }
-    
+        
     // headerView 尺寸
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: UIScreen.main.bounds.width, height: headerHeight)
@@ -260,23 +256,23 @@ extension CalendarViewController {
             
             _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
             
-//            let index = self.models?.index(where: { (model) -> Bool in
-//                var isSuccess: Bool = false
-//                for single in model {
-//                    if single.id! == self.chooseBtn?.id! {
-//                        isSuccess = true
-//                    }
-//                }
-//                return isSuccess
-//            })
-//            
-//            let sModel = self.models?[index!]
-//            
-//            for m in sModel! {
-//                if m.id! == self.chooseBtn?.id! {
-//                    m.dataStr = text!
-//                }
-//            }
+            let index = self.models?.index(where: { (model) -> Bool in
+                var isSuccess: Bool = false
+                for single in model {
+                    if single.id! == self.chooseBtn?.id! {
+                        isSuccess = true
+                    }
+                }
+                return isSuccess
+            })
+            
+            let sModel = self.models?[index!]
+            
+            for m in sModel! {
+                if m.id! == self.chooseBtn?.id! {
+                    m.dataStr = text!
+                }
+            }
             
             if let text = text, let chooseBtn = self.chooseBtn {
                 self.opinionIndicator(button: chooseBtn, text: text)

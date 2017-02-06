@@ -110,6 +110,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
         super.touchesEnded(touches, with: event)
+
         // 点击时取消菜单的第一响应者并且隐藏菜单
         self.resignFirstResponder()
         menu.setMenuVisible(false, animated: true)
@@ -215,7 +216,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         // 长按手势按下和抬起会调用两次
         if longPress.state == .began {
             self.becomeFirstResponder()
-            
+
             // 菜单显示位置
             menu.setTargetRect(self.bounds, in: self)
             
@@ -231,7 +232,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     func reloadMenu() {
         setupMenuItems()
     }
-    
+        
     /// 自定义菜单的选项
     fileprivate func setupMenuItems() {
         var skipAction = UIMenuItem()
@@ -285,6 +286,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     fileprivate func chooseEvent(bgStatus: StatusType) {
         self.bgStatus = bgStatus
+
         opinionStatus()
         // 传递出去点击事件和参数
         if buttonTapHandler != nil {

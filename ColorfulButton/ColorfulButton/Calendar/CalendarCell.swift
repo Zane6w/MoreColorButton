@@ -11,23 +11,22 @@ import UIKit
 class CalendarCell: UICollectionViewCell {
     // MARK:- 属性
     // 按钮
-    var planButton: ColorfulButton? {
-        didSet {
-            print("按钮设置")
-        }
-    }
+    var planButton: ColorfulButton?
     
     var model: StatusModel? {
         didSet {
-            self.planButton?.id = (self.model?.id)!
-            self.planButton?.setTitle((self.model?.dateStr)!, for: .normal)
-            self.planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
-            self.planButton?.dataStr = (self.model?.dataStr)!
-            if self.model?.dataStr != "" {
-                self.planButton?.indicator.isHidden = false
+            planButton?.becomeFirstResponder()
+            planButton?.id = (self.model?.id)!
+            planButton?.setTitle((self.model?.dateStr)!, for: .normal)
+            planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
+            planButton?.dataStr = (self.model?.dataStr)!
+            
+            if model?.dataStr != "" {
+                planButton?.indicator.isHidden = false
             } else {
-                self.planButton?.indicator.isHidden = true
+                planButton?.indicator.isHidden = true
             }
+            planButton?.resignFirstResponder()
         }
     }
     
@@ -48,5 +47,5 @@ class CalendarCell: UICollectionViewCell {
         super.init(coder: aDecoder)
         fatalError("init(coder:) has not been implemented")
     }
-
+    
 }
