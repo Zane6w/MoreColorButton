@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92FCEA31E320F690028EAE2 /* RemarksController.swift */; };
 		D92FCEC51E34A5290028EAE2 /* SQLite.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92FCEC41E34A5290028EAE2 /* SQLite.swift */; };
+		D934EAAB1E471A4000213EE1 /* ColorfulView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D934EAAA1E471A4000213EE1 /* ColorfulView.swift */; };
 		D982481D1E45AEB400C88491 /* CalendarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D982481C1E45AEB400C88491 /* CalendarViewController.swift */; };
 		D982481F1E45AF8A00C88491 /* WeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D982481E1E45AF8A00C88491 /* WeekView.swift */; };
 		D98248231E45B05700C88491 /* CalendarCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D98248211E45B05700C88491 /* CalendarCell.swift */; };
@@ -20,6 +21,7 @@
 		D9DF479C1E307C7900971C1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D9DF479B1E307C7900971C1E /* Assets.xcassets */; };
 		D9DF479F1E307C7900971C1E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9DF479D1E307C7900971C1E /* LaunchScreen.storyboard */; };
 		D9DF47A71E307DB300971C1E /* ColorfulButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47A61E307DB300971C1E /* ColorfulButton.swift */; };
+		D9FA5A1F1E46DD4F005A9525 /* StatusModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9FA5A1E1E46DD4F005A9525 /* StatusModel.swift */; };
 		F668BCF47830150070D5EF83 /* Pods_ColorfulButton.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 73614058761DE5FFF11BC5D1 /* Pods_ColorfulButton.framework */; };
 /* End PBXBuildFile section */
 
@@ -30,6 +32,7 @@
 		D92FCEA31E320F690028EAE2 /* RemarksController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RemarksController.swift; sourceTree = "<group>"; };
 		D92FCEC31E34A4BF0028EAE2 /* Bridge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bridge.h; sourceTree = "<group>"; };
 		D92FCEC41E34A5290028EAE2 /* SQLite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SQLite.swift; sourceTree = "<group>"; };
+		D934EAAA1E471A4000213EE1 /* ColorfulView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorfulView.swift; sourceTree = "<group>"; };
 		D982481C1E45AEB400C88491 /* CalendarViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CalendarViewController.swift; path = ColorfulButton/CalendarViewController.swift; sourceTree = SOURCE_ROOT; };
 		D982481E1E45AF8A00C88491 /* WeekView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WeekView.swift; path = ../WeekView.swift; sourceTree = "<group>"; };
 		D98248211E45B05700C88491 /* CalendarCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CalendarCell.swift; sourceTree = "<group>"; };
@@ -43,6 +46,7 @@
 		D9DF479E1E307C7900971C1E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D9DF47A01E307C7900971C1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D9DF47A61E307DB300971C1E /* ColorfulButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ColorfulButton.swift; sourceTree = "<group>"; };
+		D9FA5A1E1E46DD4F005A9525 /* StatusModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StatusModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,8 +82,9 @@
 			isa = PBXGroup;
 			children = (
 				D982481C1E45AEB400C88491 /* CalendarViewController.swift */,
-				D982481E1E45AF8A00C88491 /* WeekView.swift */,
+				D9FA5A1E1E46DD4F005A9525 /* StatusModel.swift */,
 				D98248211E45B05700C88491 /* CalendarCell.swift */,
+				D982481E1E45AF8A00C88491 /* WeekView.swift */,
 				D98248251E45BA7200C88491 /* EventManager.swift */,
 				D982482D1E4609AD00C88491 /* DateTool.swift */,
 			);
@@ -110,6 +115,7 @@
 				D9DF47941E307C7900971C1E /* AppDelegate.swift */,
 				D9DF47961E307C7900971C1E /* ViewController.swift */,
 				D9DF47A61E307DB300971C1E /* ColorfulButton.swift */,
+				D934EAAA1E471A4000213EE1 /* ColorfulView.swift */,
 				D92FCEA31E320F690028EAE2 /* RemarksController.swift */,
 				D9DF47981E307C7900971C1E /* Main.storyboard */,
 				D98248201E45B03800C88491 /* Calendar */,
@@ -252,9 +258,11 @@
 				D9DF47A71E307DB300971C1E /* ColorfulButton.swift in Sources */,
 				D92FCEC51E34A5290028EAE2 /* SQLite.swift in Sources */,
 				D982481F1E45AF8A00C88491 /* WeekView.swift in Sources */,
+				D9FA5A1F1E46DD4F005A9525 /* StatusModel.swift in Sources */,
 				D9DF47971E307C7900971C1E /* ViewController.swift in Sources */,
 				D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */,
 				D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */,
+				D934EAAB1E471A4000213EE1 /* ColorfulView.swift in Sources */,
 				D98248231E45B05700C88491 /* CalendarCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

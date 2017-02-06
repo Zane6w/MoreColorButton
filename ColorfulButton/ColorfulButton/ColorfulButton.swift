@@ -50,7 +50,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     var remarksTitle: String?
     
     /// 菜单控制器
-    fileprivate let menu = UIMenuController.shared
+    let menu = UIMenuController.shared
     
     /// 备注标识
     let indicator = UIView()
@@ -85,7 +85,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     /// 初始化方法
     fileprivate func initButton() {
         self.layer.cornerRadius = self.bounds.width * 0.5
-        self.layer.masksToBounds = true
         
         if remarksTitle == nil {
             // 判断系统当前语言
@@ -167,8 +166,8 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     // MARK:- 状态判断与颜色改变
     fileprivate func opinionStatus() {
         switch bgStatus {
-        case .Base:
-            changeColor(color: setColor(red: 154, green: 154, blue: 161))
+        //case .Base:
+            //changeColor(color: setColor(red: 154, green: 154, blue: 161))
         case .Bad:
             changeColor(color: setColor(red: 255, green: 90, blue: 95))
         case .Okay:
@@ -185,6 +184,12 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     fileprivate func changeColor(color: UIColor, duration: TimeInterval = 0.1) {
         UIView.animate(withDuration: duration) {
             self.backgroundColor = color
+        }
+        
+        if color == .white {
+            self.setTitleColor(.black, for: .normal)
+        } else {
+            self.setTitleColor(.white, for: .normal)
         }
     }
 

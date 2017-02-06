@@ -49,12 +49,22 @@ class CalendarViewController: UIViewController {
     /// 年份（可根据年份前缀来赋值按钮 ID，可用来查询旧数据）
     let year = 2017
     
+    let dayOfMonth = DateTool.shared.getDayOfMonth()
+    let firstdayOfWeek = DateTool.shared.getFirstMonthDayOfWeek()
+    
+    fileprivate var models: [[StatusModel]]?
+    
     // MARK:- 系统函数
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        loadData()
+        
+//        let allData = SQLite.shared.queryAll(inTable: tableName)
+//        print(allData!)
+        
         setupInterface()
-
+        
         collectionView?.dataSource = self
         collectionView?.delegate = self
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
@@ -89,6 +99,7 @@ class CalendarViewController: UIViewController {
         yearButton.sizeToFit()
         yearButton.isSelected = true
         yearButton.tintColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        yearButton.isOpaque = true
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: yearButton)
         
         
@@ -133,27 +144,65 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return DateTool.shared.getDayOfMonth()[section]
+        let firstday = firstdayOfWeek[section]
+        if firstday == 0 {
+            return dayOfMonth[section]
+        } else {
+            return dayOfMonth[section] + (firstday)
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-
-        let firstdayOfWeek = DateTool.shared.getFirstMonthDayOfWeek()[indexPath.section]
+        print("cellfor")
+        let firstday = firstdayOfWeek[indexPath.section]
         
-        if firstdayOfWeek != 0, indexPath.row < firstdayOfWeek - 1 {
+        if firstday != 0, indexPath.row < firstday {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
             
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
-            cell.planButton?.id = "\(year)\(indexPath.section)\(indexPath.row)"
-            EventManager.shared.accessButton(button: cell.planButton!)
+
+            cell.planButton?.buttonTapHandler = { (operatingButton) in
+                if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
+                    _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
+                } else {
+                    _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
+                }
+                
+                let index = self.models?.index(where: { (model) -> Bool in
+                    var isSuccess: Bool = false
+                    for single in model {
+                        if single.id! == operatingButton.id! {
+                            isSuccess = true
+                        }
+                    }
+                    return isSuccess
+                })
+                
+                let sModel = self.models?[index!]
+                
+                for m in sModel! {
+                    if m.id! == operatingButton.id! {
+                        m.status = "\(operatingButton.bgStatus)"
+                        m.dataStr = operatingButton.dataStr!
+                    }
+                }
+                
+            }
             
-            setupInterface(btn: cell.planButton!)
+            cell.model = self.models?[indexPath.section][indexPath.row - firstday]
+            
+            DispatchQueue.main.async {
+                //self.setupInterface(btn: cell.planButton!)
+            }
             
             return cell
         }
-        
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+
     }
     
     // headerView 尺寸
@@ -189,20 +238,20 @@ extension CalendarViewController {
             
             UIView.animate(withDuration: 0.3, animations: {
                 self.effectView?.alpha = 1.0
-                
+
                 remarksVC.modalPresentationStyle = .custom
                 self.present(remarksVC, animated: true, completion: nil)
             })
         }
         
         // 取消备注后隐藏蒙版
-        remarksVC.cancelTapHandler = { (vc) in
+        remarksVC.cancelTapHandler = { (_) in
             UIView.animate(withDuration: 0.3) {
                 self.effectView?.alpha = 0
             }
         }
         
-        remarksVC.pinTapHandler = { (vc, text) in
+        remarksVC.pinTapHandler = { (_, text) in
             UIView.animate(withDuration: 0.3) {
                 self.effectView?.alpha = 0
             }
@@ -210,6 +259,24 @@ extension CalendarViewController {
             self.chooseBtn?.dataStr = text!
             
             _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
+            
+//            let index = self.models?.index(where: { (model) -> Bool in
+//                var isSuccess: Bool = false
+//                for single in model {
+//                    if single.id! == self.chooseBtn?.id! {
+//                        isSuccess = true
+//                    }
+//                }
+//                return isSuccess
+//            })
+//            
+//            let sModel = self.models?[index!]
+//            
+//            for m in sModel! {
+//                if m.id! == self.chooseBtn?.id! {
+//                    m.dataStr = text!
+//                }
+//            }
             
             if let text = text, let chooseBtn = self.chooseBtn {
                 self.opinionIndicator(button: chooseBtn, text: text)
@@ -247,6 +314,48 @@ extension CalendarViewController {
     
 }
 
+// MARK:- 数据加载
+extension CalendarViewController {
+    fileprivate func loadData() {
+        self.models = [[StatusModel]]()
+        let days = DateTool.shared.getDayOfMonth(year: "\(year)")
+        var monthNum = 1
+        for day in days {
+            var monthStatus = [StatusModel]()
+            for i in 1...day {
+                var dict = [String: Any]()
+                let id = "\(year)\(monthNum)\(i)"
+                dict["id"] = id
+
+                let dataArray = SQLite.shared.query(inTable: tableName, id: id)
+                if dataArray?.count != 0 {
+                    let savedID = dataArray?[0] as! String
+                    let savedStatus = dataArray?[1] as! String
+                    let savedRemark = dataArray?[2] as! String
+                    
+                    if savedID == id {
+                        dict["status"] = savedStatus
+                        dict["dataStr"] = savedRemark
+                        dict["dateStr"] = "\(i)"
+                    }
+                } else {
+                    dict["status"] = "Base"
+                    dict["dataStr"] = ""
+                    dict["dateStr"] = "\(i)"
+                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: tableName)
+                }
+                
+                let status = StatusModel(dict: dict)
+                monthStatus.append(status)
+                monthNum += 1
+            }
+            self.models?.append(monthStatus)
+        }
+    }
+    
+
+}
+
 // MARK:- 手势相关
 extension CalendarViewController: UIGestureRecognizerDelegate {
     /// 点击菜单备注弹出窗口
@@ -281,8 +390,14 @@ class CollectionReusableHeaderView: UICollectionReusableView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        let titleX: CGFloat = 8
-        title.frame = CGRect(x: titleX, y: 0, width: self.bounds.width - titleX, height: self.bounds.height)
+        title.frame = CGRect(origin: .zero, size: CGSize(width: self.bounds.width, height: self.bounds.height))
+        title.textAlignment = .center
+        title.layer.masksToBounds = true
+        title.isOpaque = true
+        title.backgroundColor = .white
+        title.font = UIFont.boldSystemFont(ofSize: 18)
+        
+        title.textColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
         
         addSubview(title)
     }

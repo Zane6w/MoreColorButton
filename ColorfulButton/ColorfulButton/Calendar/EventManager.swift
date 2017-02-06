@@ -19,6 +19,8 @@ class EventManager: NSObject {
     
     fileprivate var tempViewController: UIViewController?
     
+    var dataCache = [String: Any]()
+    
     /// 语言判断
     fileprivate var isHanLanguage: Bool {
         // 判断系统当前语言
@@ -39,7 +41,7 @@ class EventManager: NSObject {
     func accessButton(button: ColorfulButton) {
         // 按钮点击事件
         button.buttonTapHandler = { (operatingButton) in
-            print("id -> \(operatingButton.id!)")
+
             if operatingButton.dataStr != nil {
                 _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
             } else {
@@ -58,7 +60,7 @@ class EventManager: NSObject {
                 _ = SQLite.shared.insert(id: button.id!, status: "\(button.bgStatus)", remark: "", inTable: tableName)
             }
         } else {
-            let dataArray = SQLite.shared.query(inTable: tableName, id: button.id!)
+//            let dataArray = SQLite.shared.query(inTable: tableName, id: button.id!)
             
             let id = dataArray?[0] as! String
             let status = dataArray?[1] as! String
@@ -102,14 +104,3 @@ class EventManager: NSObject {
     }
 
 }
-
-
-
-
-
-
-
-
-
-
-

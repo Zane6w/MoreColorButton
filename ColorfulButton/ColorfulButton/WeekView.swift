@@ -28,7 +28,7 @@ class WeekView: UIView {
          zh-Hant-US: 中文-繁体-地区美国
          ja-CN: 日语-地区中国
          */
-        print(currentLanguage)
+
         if currentLanguage.hasPrefix("zh") {
             weekTitles = ["一", "二", "三", "四", "五", "六", "日"]
         } else {
@@ -49,7 +49,7 @@ class WeekView: UIView {
         
         setBlur()
         
-        let chineseWeekday = Calendar.current.component(.weekday, from: Date()) - 1
+        let chineseWeekday = Calendar.current.component(.weekday, from: Date())
         
         let buttonWidth: CGFloat = self.bounds.width / 7
         var buttonX: CGFloat = 0
@@ -59,9 +59,14 @@ class WeekView: UIView {
             weekButton.frame = CGRect(x: buttonX, y: 0, width: buttonWidth, height: self.bounds.height)
             buttonX += buttonWidth
             
+            weekButton.isOpaque = true
             weekButton.setTitle(weekTitles[i], for: .normal)
 
-            if (i + 1) == chineseWeekday {
+            if (i + 2) == chineseWeekday {
+                weekButton.isSelected = true
+            }
+            
+            if i == 6, chineseWeekday == 1 {
                 weekButton.isSelected = true
             }
             

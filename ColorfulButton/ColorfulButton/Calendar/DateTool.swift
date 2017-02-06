@@ -12,20 +12,31 @@ class DateTool: NSObject {
     static let shared = DateTool()
     
     /// 获取一个月有几天
-    func getDayOfMonth() -> [Int] {
+    /// - parameter year: 需要判断的年份（默认是今年）
+    func getDayOfMonth(year: String? = nil) -> [Int] {
+        
+        let cmps = Calendar.current.dateComponents([.year], from: Date())
+        
+        if year == nil {
+            return opinionDayOfMonth(year: "\(cmps.year!)")
+        } else {
+            return opinionDayOfMonth(year: year!)
+        }
+    }
+    
+    // 判断某年中每个月有几天
+    fileprivate func opinionDayOfMonth(year: String) -> [Int] {
         var days = [Int]()
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss Z"
         
-        let cmps = Calendar.current.dateComponents([.year], from: Date())
-        
         var date = Date()
         for i in 1...12 {
             if i < 10 {
-                date = formatter.date(from: "\(cmps.year!)-0\(i)-01 10:10:10 +0000")!
+                date = formatter.date(from: "\(year)-0\(i)-01 10:10:10 +0000")!
             } else {
-                date = formatter.date(from: "\(cmps.year!)-\(i)-01 10:10:10 +0000")!
+                date = formatter.date(from: "\(year)-\(i)-01 10:10:10 +0000")!
             }
             let daysNumber = Calendar.current.range(of: .day, in: .month, for: date)?.count
             days.append(daysNumber!)
@@ -54,7 +65,7 @@ class DateTool: NSObject {
             let weekday = Calendar.current.component(.weekday, from: date) - 1
             weekdays.append(weekday)
         }
-        
+
         return weekdays
     }
     
