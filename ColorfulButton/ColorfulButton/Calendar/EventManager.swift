@@ -59,9 +59,7 @@ class EventManager: NSObject {
             } else {
                 _ = SQLite.shared.insert(id: button.id!, status: "\(button.bgStatus)", remark: "", inTable: tableName)
             }
-        } else {
-//            let dataArray = SQLite.shared.query(inTable: tableName, id: button.id!)
-            
+        } else {            
             let id = dataArray?[0] as! String
             let status = dataArray?[1] as! String
             let remark = dataArray?[2] as! String

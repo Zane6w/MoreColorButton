@@ -11,6 +11,7 @@ import UIKit
 class DateTool: NSObject {
     static let shared = DateTool()
     
+    // MARK:- 获取一个月有几天
     /// 获取一个月有几天
     /// - parameter year: 需要判断的年份（默认是今年）
     func getDayOfMonth(year: String? = nil) -> [Int] {
@@ -45,6 +46,7 @@ class DateTool: NSObject {
         return days
     }
     
+    // MARK:- 判断每月的第一天是星期几
     /// 判断每月的第一天是星期几
     func getFirstMonthDayOfWeek() -> [Int] {
         var weekdays = [Int]()
@@ -67,6 +69,39 @@ class DateTool: NSObject {
         }
 
         return weekdays
+    }
+    
+    // MARK:- 筛选月份和时期
+    /// 筛选月份和时期
+    /// - parameter dateStr: 日期字符串
+    /// - parameter year: 需要筛选的年份字符串
+    func filterMonthAndDay(dateStr: String, yearStr: String) -> (month: String, day: String) {
+        let strRange = Range(uncheckedBounds: (lower: dateStr.startIndex, upper: dateStr.endIndex))
+        let dateRange = dateStr.range(of: yearStr, options: .backwards, range: strRange, locale: nil)
+        let startIndex = dateRange!.upperBound
+        
+        let monthAndDayRange = Range(uncheckedBounds: (lower: startIndex, upper: dateStr.endIndex))
+        
+        let needStr = dateStr.substring(with: monthAndDayRange)
+        let needStrCount = needStr.characters.count
+        
+        var offsetBy = 1
+        if needStrCount == 4 {
+            offsetBy = 2
+        } else {
+            offsetBy = 1
+        }
+        
+        // 剩余的字符中的开头字符索引
+        let dayFirstIndex = needStr.index(needStr.startIndex, offsetBy: offsetBy)
+        
+        // 第一个是月份
+        let monthStr = needStr.substring(to: dayFirstIndex)
+        
+        // 剩下的是日期
+        let dayStr = needStr.substring(from: dayFirstIndex)
+
+        return (monthStr, dayStr)
     }
     
 }

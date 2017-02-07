@@ -10,7 +10,7 @@ import UIKit
 
 class StatusModel: NSObject {
     // MARK:- 属性
-    /// id
+    /// 按钮 ID
     var id: String?
     /// 按钮状态
     var status: String?

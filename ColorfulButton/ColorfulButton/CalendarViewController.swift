@@ -33,6 +33,8 @@ class CalendarViewController: UIViewController {
     /// 月份标识数组
     fileprivate var months = [String]()
     
+    let naviTitle = "Detail"
+    
     /// 语言判断
     var isHanLanguage: Bool {
         // 判断系统当前语言
@@ -60,7 +62,7 @@ class CalendarViewController: UIViewController {
         super.viewDidLoad()
         loadData()
         setupInterface()
-        
+        self.title = naviTitle
         collectionView?.dataSource = self
         collectionView?.delegate = self
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
@@ -166,25 +168,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
                     _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
                 }
                 
-                let index = self.models?.index(where: { (model) -> Bool in
-                    var isSuccess: Bool = false
-                    for single in model {
-                        if single.id! == operatingButton.id! {
-                            isSuccess = true
-                        }
-                    }
-                    return isSuccess
-                })
-                
-                let sModel = self.models?[index!]
-                
-                for m in sModel! {
-                    if m.id! == operatingButton.id! {
-                        m.status = "\(operatingButton.bgStatus)"
-                        m.dataStr = operatingButton.dataStr!
-                    }
-                }
-                
+                self.update(operatingButton, isChangeStatus: true)
             }
             
             cell.model = self.models?[indexPath.section][indexPath.row - firstday]
@@ -217,34 +201,45 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     
 }
 
+// MARK: - 备注界面相关
 extension CalendarViewController {
     fileprivate func setupInterface(btn: ColorfulButton) {
         btn.remarksTapHandler = { (button) in
-            print("remarks")
             self.setupBlur()
             self.chooseBtn = button
             let remarksVC = RemarksController()
+            
+            let dateTuples = DateTool.shared.filterMonthAndDay(dateStr: (button.id)!, yearStr: "\(self.year)")
+            let monthStr = dateTuples.month
+            let dayStr = dateTuples.day
+            
+            if self.isHanLanguage {
+                self.title = "\(monthStr)月\(dayStr)日"
+            } else {
+                let englishMonths = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
+                
+                self.title = "\(englishMonths[Int(monthStr)! - 1]) \(dayStr)"
+            }
+            
             if button.dataStr != nil {
                 remarksVC.textView.text = button.dataStr!
             }
             
             UIView.animate(withDuration: 0.3, animations: {
-                self.effectView?.alpha = 1.0
-
                 remarksVC.modalPresentationStyle = .custom
                 self.present(remarksVC, animated: true, completion: nil)
+                self.effectView?.alpha = 1.0
             })
-            
+
             // 取消备注后隐藏蒙版
             remarksVC.cancelTapHandler = { (_) in
-                print("cancel remarks")
                 UIView.animate(withDuration: 0.3) {
                     self.effectView?.alpha = 0
                 }
+                self.title = self.naviTitle
             }
             
             remarksVC.pinTapHandler = { (_, text) in
-                print("pin remarks")
                 UIView.animate(withDuration: 0.3) {
                     self.effectView?.alpha = 0
                 }
@@ -253,33 +248,15 @@ extension CalendarViewController {
                 
                 _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
                 
-                let index = self.models?.index(where: { (model) -> Bool in
-                    var isSuccess: Bool = false
-                    for single in model {
-                        if single.id! == self.chooseBtn?.id! {
-                            isSuccess = true
-                        }
-                    }
-                    return isSuccess
-                })
-                
-                let sModel = self.models?[index!]
-                
-                for m in sModel! {
-                    if m.id! == self.chooseBtn?.id! {
-                        m.dataStr = text!
-                    }
-                }
+                self.update(self.chooseBtn!, isChangeStatus: false)
                 
                 if let text = text, let chooseBtn = self.chooseBtn {
                     self.opinionIndicator(button: chooseBtn, text: text)
                 }
+                self.title = self.naviTitle
             }
-
             
         }
-        
-        
     }
     
     /// 按钮备注标识与菜单名称
@@ -313,6 +290,7 @@ extension CalendarViewController {
 
 // MARK:- 数据加载
 extension CalendarViewController {
+    /// 添加新数据
     fileprivate func loadData() {
         self.models = [[StatusModel]]()
         let days = DateTool.shared.getDayOfMonth(year: "\(year)")
@@ -344,13 +322,45 @@ extension CalendarViewController {
                 
                 let status = StatusModel(dict: dict)
                 monthStatus.append(status)
-                monthNum += 1
             }
+            monthNum += 1
             self.models?.append(monthStatus)
         }
     }
     
-
+    /// 更新数据
+    /// - parameter operatingButton: 正在操作的按钮
+    /// - parameter isChangeStatus: 是否更改按钮状态
+    fileprivate func update(_ operatingButton: ColorfulButton, isChangeStatus: Bool) {
+        let index = self.models?.index(where: { (model) -> Bool in
+            var isSuccess: Bool = false
+            for single in model {
+                if single.id! == operatingButton.id! {
+                    isSuccess = true
+                }
+            }
+            return isSuccess
+        })
+        
+        let singleModel = self.models?[index!]
+        
+        // 是否需要修改按钮状态
+        if isChangeStatus {
+            for model in singleModel! {
+                if model.id! == operatingButton.id! {
+                    model.status = "\(operatingButton.bgStatus)"
+                    model.dataStr = operatingButton.dataStr!
+                }
+            }
+        } else {
+            for model in singleModel! {
+                if model.id! == operatingButton.id! {
+                    model.dataStr = operatingButton.dataStr!
+                }
+            }
+        }
+    }
+    
 }
 
 // MARK:- 手势相关

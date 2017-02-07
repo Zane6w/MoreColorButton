@@ -13,7 +13,8 @@ class WeekView: UIView {
     /// 星期数组
     fileprivate var weekTitles = [String]()
     
-    // MARK:- 方法
+    // MARK:- 方法函数
+    
     override init(frame: CGRect) {
         super.init(frame: frame)
         
@@ -28,7 +29,6 @@ class WeekView: UIView {
          zh-Hant-US: 中文-繁体-地区美国
          ja-CN: 日语-地区中国
          */
-
         if currentLanguage.hasPrefix("zh") {
             weekTitles = ["一", "二", "三", "四", "五", "六", "日"]
         } else {
