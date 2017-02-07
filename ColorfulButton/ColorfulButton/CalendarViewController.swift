@@ -59,10 +59,6 @@ class CalendarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadData()
-        
-//        let allData = SQLite.shared.queryAll(inTable: tableName)
-//        print(allData!)
-        
         setupInterface()
         
         collectionView?.dataSource = self
@@ -223,11 +219,11 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
 
 extension CalendarViewController {
     fileprivate func setupInterface(btn: ColorfulButton) {
-        let remarksVC = RemarksController()
         btn.remarksTapHandler = { (button) in
+            print("remarks")
             self.setupBlur()
             self.chooseBtn = button
-            
+            let remarksVC = RemarksController()
             if button.dataStr != nil {
                 remarksVC.textView.text = button.dataStr!
             }
@@ -238,47 +234,52 @@ extension CalendarViewController {
                 remarksVC.modalPresentationStyle = .custom
                 self.present(remarksVC, animated: true, completion: nil)
             })
-        }
-        
-        // 取消备注后隐藏蒙版
-        remarksVC.cancelTapHandler = { (_) in
-            UIView.animate(withDuration: 0.3) {
-                self.effectView?.alpha = 0
-            }
-        }
-        
-        remarksVC.pinTapHandler = { (_, text) in
-            UIView.animate(withDuration: 0.3) {
-                self.effectView?.alpha = 0
+            
+            // 取消备注后隐藏蒙版
+            remarksVC.cancelTapHandler = { (_) in
+                print("cancel remarks")
+                UIView.animate(withDuration: 0.3) {
+                    self.effectView?.alpha = 0
+                }
             }
             
-            self.chooseBtn?.dataStr = text!
-            
-            _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
-            
-            let index = self.models?.index(where: { (model) -> Bool in
-                var isSuccess: Bool = false
-                for single in model {
-                    if single.id! == self.chooseBtn?.id! {
-                        isSuccess = true
+            remarksVC.pinTapHandler = { (_, text) in
+                print("pin remarks")
+                UIView.animate(withDuration: 0.3) {
+                    self.effectView?.alpha = 0
+                }
+                
+                self.chooseBtn?.dataStr = text!
+                
+                _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
+                
+                let index = self.models?.index(where: { (model) -> Bool in
+                    var isSuccess: Bool = false
+                    for single in model {
+                        if single.id! == self.chooseBtn?.id! {
+                            isSuccess = true
+                        }
+                    }
+                    return isSuccess
+                })
+                
+                let sModel = self.models?[index!]
+                
+                for m in sModel! {
+                    if m.id! == self.chooseBtn?.id! {
+                        m.dataStr = text!
                     }
                 }
-                return isSuccess
-            })
-            
-            let sModel = self.models?[index!]
-            
-            for m in sModel! {
-                if m.id! == self.chooseBtn?.id! {
-                    m.dataStr = text!
+                
+                if let text = text, let chooseBtn = self.chooseBtn {
+                    self.opinionIndicator(button: chooseBtn, text: text)
                 }
             }
-            
-            if let text = text, let chooseBtn = self.chooseBtn {
-                self.opinionIndicator(button: chooseBtn, text: text)
-            }
-        }
 
+            
+        }
+        
+        
     }
     
     /// 按钮备注标识与菜单名称
