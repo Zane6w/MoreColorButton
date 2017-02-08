@@ -17,7 +17,7 @@ class StatusModel: NSObject {
     /// 按钮数据
     var dataStr: String?
     /// 日期文字
-    var dateStr: String?
+    var dayStr: String?
     
     // MARK:- 自定义构造函数
     

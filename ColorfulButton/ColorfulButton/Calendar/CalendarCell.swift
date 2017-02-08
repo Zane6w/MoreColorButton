@@ -8,13 +8,16 @@
 
 import UIKit
 
+/// "今天的标识"定时器
+var todayIndicatorTimer: Timer?
+
 class CalendarCell: UICollectionViewCell {
     // MARK:- 属性
     // 按钮
     var planButton: ColorfulButton?
     // 今天日期标识指示器
     let todayIndicator = UIView()
-    
+        
     /// 语言判断
     var isHanLanguage: Bool {
         // 判断系统当前语言
@@ -34,7 +37,7 @@ class CalendarCell: UICollectionViewCell {
             planButton?.becomeFirstResponder()
             
             planButton?.id = (self.model?.id)!
-            planButton?.setTitle((self.model?.dateStr)!, for: .normal)
+            planButton?.setTitle((self.model?.dayStr)!, for: .normal)
             planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
             planButton?.dataStr = (self.model?.dataStr)!
             
@@ -50,20 +53,23 @@ class CalendarCell: UICollectionViewCell {
             
             DispatchQueue.main.async {
                 let nowDateStr = DateTool.shared.getCompactDate()
-
+                
                 if (self.planButton?.id)! == nowDateStr {
                     self.todayIndicator.isHidden = false
                 } else {
                     self.todayIndicator.isHidden = true
                 }
+                
             }
             
+            if todayIndicatorTimer == nil {
+                todayIndicatorTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTodayIndicator), userInfo: nil, repeats: true)
+            }
             
         }
     }
     
     // MARK:- 系统函数
-    
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -81,6 +87,17 @@ class CalendarCell: UICollectionViewCell {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    /// 随时更新"今天的标识"
+    @objc fileprivate func updateTodayIndicator() {
+        let nowDateStr = DateTool.shared.getCompactDate()
+        
+        if (self.planButton?.id)! == nowDateStr {
+            self.todayIndicator.isHidden = false
+        } else {
+            self.todayIndicator.isHidden = true
+        }
     }
     
     /// 按钮备注标识与菜单名称

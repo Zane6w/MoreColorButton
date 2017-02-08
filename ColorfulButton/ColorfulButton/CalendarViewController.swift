@@ -33,6 +33,9 @@ class CalendarViewController: UIViewController {
     var effectView: UIVisualEffectView?
     /// 月份标识数组
     fileprivate var months = [String]()
+    /// /// 首个工作日（默认星期日: 0）
+    /// - 周日、 周一 ~ 周六标识: 0、1 ~ 6
+    var firstWeekday = 3
     
     let naviTitle = "Detail"
     
@@ -62,17 +65,22 @@ class CalendarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadData()
+        
+        weekTitleView.frame = CGRect(x: 0, y: 64, width: UIScreen.main.bounds.width, height: 30)
+        weekTitleView.firstWorkday = self.firstWeekday
+        
         setupInterface()
+        
         self.title = naviTitle
         collectionView?.dataSource = self
         collectionView?.delegate = self
+        
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
 
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
         
         collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: normalCell)
         
-        weekTitleView.frame = CGRect(x: 0, y: 64, width: weekTitleView.bounds.width, height: weekTitleView.bounds.height)
         view.addSubview(weekTitleView)
     }
 
@@ -107,6 +115,7 @@ class CalendarViewController: UIViewController {
         collectionView?.backgroundColor = .white
         collectionView?.collectionViewLayout = layout
         collectionView?.showsVerticalScrollIndicator = false
+        
         collectionView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: 0, right: 0)
         
         
@@ -141,48 +150,70 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         return 12
     }
     
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        // 每月的第一天是星期几？ 周日、 周一 ~ 周六标识: 0、1 ~ 6
         let firstday = firstdayOfWeek[section]
+        
+        // 这个月的第一天是星期天, 并且星期显示方式为"周日首个工作日"
         if firstday == 0 {
-            return dayOfMonth[section]
+            if firstWeekday == 0 {
+                return dayOfMonth[section]
+            } else {
+                return dayOfMonth[section] + (Int(itemsNumber) - firstWeekday)
+            }
         } else {
-            return dayOfMonth[section] + (firstday)
+            // 这个月的第一天不是星期天
+            if firstWeekday == 0 {
+                return dayOfMonth[section] + firstday
+            } else {
+                return dayOfMonth[section]  + firstday + (Int(itemsNumber) - firstWeekday)
+            }
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        
+        // 每月的第一天是星期几？ 周日、 周一 ~ 周六标识: 0、1 ~ 6
         let firstday = firstdayOfWeek[indexPath.section]
         
-        if firstday != 0, indexPath.row < firstday {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
-            
-            return cell
+        if firstday != 0 {
+            if indexPath.row < abs(firstday - firstWeekday) {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
+                
+                return cell
+            } else {
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
+                
+                cell.planButton?.buttonTapHandler = { (operatingButton) in
+                    /* 判断点击的日期是否是未来日期
+                     未来日期不可选择, 不会保存, 同时震动提示
+                     */
+                    self.opinionDate(operatingButton)
+                }
+                
+                if indexPath.row < dayOfMonth[indexPath.section] {
+                    cell.model = self.models?[indexPath.section][indexPath.row]
+                }
+                
+                DispatchQueue.main.async {
+                    self.setupInterface(btn: cell.planButton!)
+                }
+                
+                return cell
+            }
+
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
             
             cell.planButton?.buttonTapHandler = { (operatingButton) in
-                /* 判断点击的日期是否是未来日期 
-                   未来日期不可选择, 不会保存, 同时震动提示
+                /* 判断点击的日期是否是未来日期
+                 未来日期不可选择, 不会保存, 同时震动提示
                  */
-                let nowDateStr = DateTool.shared.getCompactDate()
-                
-                if Int((operatingButton.id)!)! <= Int(nowDateStr)! {
-                    if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
-                        _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
-                    } else {
-                        _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
-                    }
-                    
-                    self.update(operatingButton, isChangeStatus: true)
-                } else {
-                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
-                    cell.planButton?.bgStatus = .Base
-                }
+                self.opinionDate(operatingButton)
             }
             
-            cell.model = self.models?[indexPath.section][indexPath.row - firstday]
+            if indexPath.row < dayOfMonth[indexPath.section] {
+                cell.model = self.models?[indexPath.section][indexPath.row]
+            }
             
             DispatchQueue.main.async {
                 self.setupInterface(btn: cell.planButton!)
@@ -190,8 +221,9 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             
             return cell
         }
-    }
         
+    }
+    
     // headerView 尺寸
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
         return CGSize(width: UIScreen.main.bounds.width, height: headerHeight)
@@ -208,6 +240,31 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         }
         
         return reusableView!
+    }
+    
+}
+
+// MARK:- 日期判断
+extension CalendarViewController {
+    /// 日期判断
+    /// - 判断点击的日期是否是未来日期
+    /// - 未来日期不可选择，不会保存，同时震动提示。
+    /// - parameter operatingButton: 点击的按钮
+    fileprivate func opinionDate(_ operatingButton: ColorfulButton) {
+        let nowDateStr = DateTool.shared.getCompactDate()
+        
+        if Int((operatingButton.id)!)! <= Int(nowDateStr)! {
+            if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
+                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
+            } else {
+                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
+            }
+            
+            self.update(operatingButton, isChangeStatus: true)
+        } else {
+            AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            operatingButton.bgStatus = .Base
+        }
     }
     
 }
@@ -338,12 +395,12 @@ extension CalendarViewController {
                     if savedID == id {
                         dict["status"] = savedStatus
                         dict["dataStr"] = savedRemark
-                        dict["dateStr"] = "\(i)"
+                        dict["dayStr"] = "\(i)"
                     }
                 } else {
                     dict["status"] = "Base"
                     dict["dataStr"] = ""
-                    dict["dateStr"] = "\(i)"
+                    dict["dayStr"] = "\(i)"
                     _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: tableName)
                 }
                 
