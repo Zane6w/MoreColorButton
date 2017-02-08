@@ -11,6 +11,15 @@ import UIKit
 class DateTool: NSObject {
     static let shared = DateTool()
     
+    // MARK:- 获取紧凑型当前年月日
+    /// 获取紧凑型当前年月日
+    func getCompactDate(dateFormat: String = "yyyyMMdd") -> String {
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = dateFormat
+        return formatter.string(from: now)
+    }
+    
     // MARK:- 获取一个月有几天
     /// 获取一个月有几天
     /// - parameter year: 需要判断的年份（默认是今年）
@@ -69,6 +78,30 @@ class DateTool: NSObject {
         }
 
         return weekdays
+    }
+    
+    // MARK:- ID 完整年月日处理
+    /// ID 完整年月日处理
+    func getFullDateStrOfID(id: String) -> String {
+        let year = getCompactDate(dateFormat: "yyyy")
+        
+        let dateTuples = filterMonthAndDay(dateStr: id, yearStr: year)
+        let month = dateTuples.month
+        let day = dateTuples.day
+
+        if month.characters.count == 1 {
+            if day.characters.count == 1 {
+                return "\(year)0\(month.characters.last!)0\(day.characters.last!)"
+            } else {
+                return "\(year)0\(month.characters.last!)\(day)"
+            }
+        } else {
+            if day.characters.count == 1 {
+                return "\(year)\(month)0\(day.characters.last!)"
+            } else {
+                return "\(year)\(month)\(day)"
+            }
+        }
     }
     
     // MARK:- 筛选月份和时期

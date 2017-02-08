@@ -12,6 +12,8 @@ class CalendarCell: UICollectionViewCell {
     // MARK:- 属性
     // 按钮
     var planButton: ColorfulButton?
+    // 今天日期标识指示器
+    let todayIndicator = UIView()
     
     /// 语言判断
     var isHanLanguage: Bool {
@@ -45,6 +47,18 @@ class CalendarCell: UICollectionViewCell {
             opinionIndicator(button: planButton!, text: (planButton?.dataStr)!)
             
             planButton?.resignFirstResponder()
+            
+            DispatchQueue.main.async {
+                let nowDateStr = DateTool.shared.getCompactDate()
+
+                if (self.planButton?.id)! == nowDateStr {
+                    self.todayIndicator.isHidden = false
+                } else {
+                    self.todayIndicator.isHidden = true
+                }
+            }
+            
+            
         }
     }
     
@@ -52,10 +66,16 @@ class CalendarCell: UICollectionViewCell {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         planButton = ColorfulButton(frame: self.bounds)
-        
         self.contentView.addSubview(planButton!)
+        
+        let todayHeight: CGFloat = 1
+        let todayY: CGFloat = self.bounds.height - todayHeight
+        todayIndicator.frame = CGRect(x: 0, y: todayY, width: self.bounds.width, height: todayHeight)
+        todayIndicator.backgroundColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        todayIndicator.isHidden = true
+        self.contentView.addSubview(todayIndicator)
     }
     
     required init?(coder aDecoder: NSCoder) {

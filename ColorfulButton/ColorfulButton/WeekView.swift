@@ -55,8 +55,11 @@ class WeekView: UIView {
         var buttonX: CGFloat = 0
         for i in 0..<7 {
             let weekButton = UIButton(type: .system)
+            
             weekButton.isUserInteractionEnabled = false
+            
             weekButton.frame = CGRect(x: buttonX, y: 0, width: buttonWidth, height: self.bounds.height)
+            
             buttonX += buttonWidth
             
             weekButton.isOpaque = true

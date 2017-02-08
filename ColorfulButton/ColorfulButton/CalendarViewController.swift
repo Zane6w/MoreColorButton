@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AudioToolbox
 
 private let collectionCellIdentifier = "collectionCell"
 private let headerIdentifier = "headerCell"
@@ -160,15 +161,25 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             return cell
         } else {
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
-        
+            
             cell.planButton?.buttonTapHandler = { (operatingButton) in
-                if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
-                    _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
-                } else {
-                    _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
-                }
+                /* 判断点击的日期是否是未来日期 
+                   未来日期不可选择, 不会保存, 同时震动提示
+                 */
+                let nowDateStr = DateTool.shared.getCompactDate()
                 
-                self.update(operatingButton, isChangeStatus: true)
+                if Int((operatingButton.id)!)! <= Int(nowDateStr)! {
+                    if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
+                        _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
+                    } else {
+                        _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
+                    }
+                    
+                    self.update(operatingButton, isChangeStatus: true)
+                } else {
+                    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                    cell.planButton?.bgStatus = .Base
+                }
             }
             
             cell.model = self.models?[indexPath.section][indexPath.row - firstday]
@@ -209,6 +220,7 @@ extension CalendarViewController {
             self.chooseBtn = button
             let remarksVC = RemarksController()
             
+            // 随时改变标题显示
             let dateTuples = DateTool.shared.filterMonthAndDay(dateStr: (button.id)!, yearStr: "\(self.year)")
             let monthStr = dateTuples.month
             let dayStr = dateTuples.day
@@ -295,11 +307,26 @@ extension CalendarViewController {
         self.models = [[StatusModel]]()
         let days = DateTool.shared.getDayOfMonth(year: "\(year)")
         var monthNum = 1
+        var id = ""
         for day in days {
             var monthStatus = [StatusModel]()
             for i in 1...day {
                 var dict = [String: Any]()
-                let id = "\(year)\(monthNum)\(i)"
+
+                if monthNum.description.characters.count == 1 {
+                    if i.description.characters.count == 1 {
+                        id = "\(year)0\(monthNum)0\(i)"
+                    } else {
+                        id = "\(year)0\(monthNum)\(i)"
+                    }
+                } else {
+                    if i.description.characters.count == 1 {
+                        id = "\(year)\(monthNum)0\(i)"
+                    } else {
+                        id = "\(year)\(monthNum)\(i)"
+                    }
+                }
+                
                 dict["id"] = id
 
                 let dataArray = SQLite.shared.query(inTable: tableName, id: id)

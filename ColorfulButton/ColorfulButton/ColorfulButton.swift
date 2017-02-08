@@ -136,7 +136,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         if buttonTapHandler != nil {
             buttonTapHandler!(self)
         }
-        
+
         opinionIndicatorColor()
     }
         
