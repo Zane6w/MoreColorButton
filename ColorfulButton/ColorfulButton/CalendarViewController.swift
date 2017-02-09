@@ -35,7 +35,7 @@ class CalendarViewController: UIViewController {
     fileprivate var months = [String]()
     /// /// 首个工作日（默认星期日: 0）
     /// - 周日、 周一 ~ 周六标识: 0、1 ~ 6
-    var firstWeekday = 3
+    var firstWeekday = 0
     
     let naviTitle = "Detail"
     
@@ -65,7 +65,7 @@ class CalendarViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         loadData()
-        
+
         weekTitleView.frame = CGRect(x: 0, y: 64, width: UIScreen.main.bounds.width, height: 30)
         weekTitleView.firstWorkday = self.firstWeekday
         
@@ -166,7 +166,11 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             if firstWeekday == 0 {
                 return dayOfMonth[section] + firstday
             } else {
-                return dayOfMonth[section]  + firstday + (Int(itemsNumber) - firstWeekday)
+                if firstday >= firstWeekday {
+                    return dayOfMonth[section] + firstday - firstWeekday
+                } else {
+                    return dayOfMonth[section] + firstday + (Int(itemsNumber) - firstWeekday)
+                }
             }
         }
     }
@@ -175,53 +179,71 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         // 每月的第一天是星期几？ 周日、 周一 ~ 周六标识: 0、1 ~ 6
         let firstday = firstdayOfWeek[indexPath.section]
         
-        if firstday != 0 {
-            if indexPath.row < abs(firstday - firstWeekday) {
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
-                
-                return cell
+        if firstWeekday == 0 {
+            if firstday == 0 {
+                return createCalendarCell(collectionView, indexPath, row: indexPath.row)
             } else {
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
-                
-                cell.planButton?.buttonTapHandler = { (operatingButton) in
-                    /* 判断点击的日期是否是未来日期
-                     未来日期不可选择, 不会保存, 同时震动提示
-                     */
-                    self.opinionDate(operatingButton)
+                if indexPath.row < firstday {
+                    return createBlankCell(collectionView, indexPath)
+                } else {
+                    return createCalendarCell(collectionView, indexPath, row: indexPath.row - firstday)
                 }
-                
-                if indexPath.row < dayOfMonth[indexPath.section] {
-                    cell.model = self.models?[indexPath.section][indexPath.row]
-                }
-                
-                DispatchQueue.main.async {
-                    self.setupInterface(btn: cell.planButton!)
-                }
-                
-                return cell
             }
-
         } else {
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
-            
-            cell.planButton?.buttonTapHandler = { (operatingButton) in
-                /* 判断点击的日期是否是未来日期
-                 未来日期不可选择, 不会保存, 同时震动提示
-                 */
-                self.opinionDate(operatingButton)
+            if firstday == 0 {
+                if indexPath.row < (Int(itemsNumber) - firstWeekday) {
+                    return createBlankCell(collectionView, indexPath)
+                } else {
+                    return createCalendarCell(collectionView, indexPath, row: (indexPath.row - (Int(itemsNumber) - firstWeekday)) )
+                }
+            } else {
+                if firstday >= firstWeekday {
+                    if firstday == firstWeekday {
+                        return createCalendarCell(collectionView, indexPath, row: indexPath.row)
+                    } else {
+                        if indexPath.row < firstday - firstWeekday {
+                            return createBlankCell(collectionView, indexPath)
+                        } else {
+                            return createCalendarCell(collectionView, indexPath, row: indexPath.row - (firstday - firstWeekday) )
+                        }
+                    }
+                } else {
+                    if indexPath.row < firstday + (Int(itemsNumber) - firstWeekday) {
+                        return createBlankCell(collectionView, indexPath)
+                    } else {
+                        return createCalendarCell(collectionView, indexPath, row: indexPath.row - (firstday + Int(itemsNumber) - firstWeekday) )
+                    }
+                }
             }
-            
-            if indexPath.row < dayOfMonth[indexPath.section] {
-                cell.model = self.models?[indexPath.section][indexPath.row]
-            }
-            
-            DispatchQueue.main.async {
-                self.setupInterface(btn: cell.planButton!)
-            }
-            
-            return cell
         }
         
+    }
+    
+    /// 创建空白 Cell
+    fileprivate func createBlankCell(_ collectionView: UICollectionView, _ indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: normalCell, for: indexPath)
+        
+        return cell
+    }
+    
+    /// 创建 CalendarCell
+    fileprivate func createCalendarCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, row: Int) -> CalendarCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
+        
+        cell.planButton?.buttonTapHandler = { (operatingButton) in
+            /* 判断点击的日期是否是未来日期
+             未来日期不可选择, 不会保存, 同时震动提示
+             */
+            self.opinionDate(operatingButton)
+        }
+
+        cell.model = self.models?[indexPath.section][row]
+        
+        DispatchQueue.main.async {
+            self.setupInterface(btn: cell.planButton!)
+        }
+        
+        return cell
     }
     
     // headerView 尺寸
