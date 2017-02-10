@@ -65,7 +65,6 @@ class CalendarCell: UICollectionViewCell {
             if todayIndicatorTimer == nil {
                 todayIndicatorTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTodayIndicator), userInfo: nil, repeats: true)
             }
-            
         }
     }
     

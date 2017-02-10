@@ -144,7 +144,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     fileprivate func setRemarksIndicator() {
         let indicatorSize: CGFloat = 6
         let indicatorX: CGFloat = self.bounds.width * 0.5 - indicatorSize * 0.5
-        let indicatorY: CGFloat = self.bounds.height - 10 - indicatorSize
+        let indicatorY: CGFloat = self.bounds.height - 6 - indicatorSize
         indicator.frame = CGRect(x: indicatorX, y: indicatorY, width: indicatorSize, height: indicatorSize)
         indicator.backgroundColor = .white
         indicator.layer.cornerRadius = indicatorSize * 0.5

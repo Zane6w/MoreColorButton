@@ -11,6 +11,7 @@ import AudioToolbox
 
 private let collectionCellIdentifier = "collectionCell"
 private let headerIdentifier = "headerCell"
+private let footerIdentifier = "footerCell"
 private let normalCell = "normalCell"
 
 class CalendarViewController: UIViewController {
@@ -19,7 +20,9 @@ class CalendarViewController: UIViewController {
     fileprivate let layout = UICollectionViewFlowLayout()
     fileprivate var collectionView: UICollectionView?
     /// 头部高度
-    fileprivate let headerHeight: CGFloat = 40
+    fileprivate let headerHeight: CGFloat = 30
+    /// 尾部高度
+    fileprivate let footerHeight: CGFloat = 40
     
     /// **collectionView** 每个 **cell** 上下左右的间距
     fileprivate let cellItemSpace: CGFloat = 3
@@ -64,28 +67,36 @@ class CalendarViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         loadData()
-
-        weekTitleView.frame = CGRect(x: 0, y: 64, width: UIScreen.main.bounds.width, height: 30)
+        
+        weekTitleView.frame = CGRect(x: 0, y: (navigationController?.navigationBar.frame.maxY)!, width: UIScreen.main.bounds.width, height: 30)
+        weekTitleView.sorted = .Right
+        setupInterface()
+        
         weekTitleView.firstWorkday = self.firstWeekday
         
-        setupInterface()
+        view.addSubview(weekTitleView)
         
         self.title = naviTitle
         collectionView?.dataSource = self
         collectionView?.delegate = self
         
         collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionHeader, withReuseIdentifier: headerIdentifier)
+        
+        collectionView?.register(CollectionReusableHeaderView.self, forSupplementaryViewOfKind: UICollectionElementKindSectionFooter, withReuseIdentifier: footerIdentifier)
 
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
         
         collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: normalCell)
-        
-        view.addSubview(weekTitleView)
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        //print(scrollView.contentOffset.y)
     }
 
     // MARK:- 界面设置
@@ -113,11 +124,10 @@ class CalendarViewController: UIViewController {
         let frame = CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         collectionView = UICollectionView(frame: frame, collectionViewLayout: layout)
         collectionView?.backgroundColor = .white
-        collectionView?.collectionViewLayout = layout
+//        collectionView?.collectionViewLayout = layout
         collectionView?.showsVerticalScrollIndicator = false
         
-        collectionView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: 0, right: 0)
-        
+        collectionView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: -footerHeight, right: 0)
         
         // 每个cell的尺寸
         let oneItemSize: CGFloat = (collectionView?.bounds.width)! / itemsNumber - cellItemSpace * 2
@@ -251,6 +261,14 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         return CGSize(width: UIScreen.main.bounds.width, height: headerHeight)
     }
     
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForFooterInSection section: Int) -> CGSize {
+        if section == 11 {
+            return CGSize(width: UIScreen.main.bounds.width, height: footerHeight)
+        } else {
+            return .zero
+        }
+    }
+    
     // 自定义 headerView
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         
@@ -259,6 +277,11 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         if kind == UICollectionElementKindSectionHeader {
             reusableView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: headerIdentifier, for: indexPath) as! CollectionReusableHeaderView
             (reusableView as! CollectionReusableHeaderView).title.text = months[indexPath.section]
+        }
+        
+        if kind == UICollectionElementKindSectionFooter, indexPath.section == 11 {
+            reusableView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: footerIdentifier, for: indexPath) as! CollectionReusableHeaderView
+            (reusableView as! CollectionReusableHeaderView).title.text = "Footer"
         }
         
         return reusableView!

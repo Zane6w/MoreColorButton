@@ -11,15 +11,30 @@ import UIKit
 /// 顶部日期更新定时器
 var weekViewTimer: Timer?
 
+/// 星期排列方式
+enum SortedType {
+    /// 按照给定的第一工作日排序
+    case Normal
+    
+    /// 今天永远在右侧排序
+    case Right
+}
+
 class WeekView: UIView {
     // MARK:- 属性
     /// 星期数组
     fileprivate var weekTitles = [String]()
     
+    var blurEffectView: UIVisualEffectView?
+    
     /// 当前日期文字
     var weekday = ""
+    /// 当前日期数字
+    var weekdayNumber = 1
     
     var weeksButtons = [UIButton]()
+    /// 排序方式（默认安给定的第一个工作日排序）
+    var sorted: SortedType = .Normal
     
     /// 首个工作日（默认星期日: 0）
     /// - 周日、 周一 ~ 周六标识: 0、1 ~ 6
@@ -39,15 +54,24 @@ class WeekView: UIView {
             
             // 周一 ~ 周日 对应数字: [ 2 3 4 5 6 7 1 ]
             let weekday = Calendar.current.component(.weekday, from: Date())
+            self.weekdayNumber = weekday
             
             if currentLanguage.hasPrefix("zh") {
                 let weeks = ["日", "一", "二", "三", "四", "五", "六"]
                 self.weekday = weeks[weekday - 1]
-                weekTitles = sortWeeks(weeks, firstWorkday: firstWorkday)
+                if sorted == .Normal {
+                    weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                } else {
+                    weekTitles = sortTodayIsRight(weeks: weeks)
+                }
             } else {
                 let weeks = ["Sun.", "Mon.", "Tues.", "Wed.", "Thur.", "Fri.", "Sat."]
                 self.weekday = weeks[weekday - 1]
-                weekTitles = sortWeeks(weeks, firstWorkday: firstWorkday)
+                if sorted == .Normal {
+                    weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                } else {
+                    weekTitles = sortTodayIsRight(weeks: weeks)
+                }
             }
             
             setupInterface()
@@ -68,6 +92,10 @@ class WeekView: UIView {
         setupTimer()
     }
     
+    override func removeFromSuperview() {
+        super.removeFromSuperview()
+    }
+    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -77,6 +105,12 @@ class WeekView: UIView {
         self.tintColor = .black
 
         setBlur()
+        
+        for weekButton in weeksButtons {
+            weekButton.removeFromSuperview()
+        }
+        
+        weeksButtons.removeAll()
         
         let buttonWidth: CGFloat = self.bounds.width / 7
         var buttonX: CGFloat = 0
@@ -95,19 +129,21 @@ class WeekView: UIView {
             weeksButtons.append(weekButton)
             
             self.addSubview(weekButton)
-        }
+        }        
     }
     
     /// 蒙版
     fileprivate func setBlur() {
-        let blurEffect = UIBlurEffect(style: .extraLight)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = self.bounds
-        self.addSubview(blurEffectView)
+        if blurEffectView == nil {
+            let blurEffect = UIBlurEffect(style: .extraLight)
+            blurEffectView = UIVisualEffectView(effect: blurEffect)
+            blurEffectView?.frame = self.bounds
+            self.addSubview(blurEffectView!)
+        }
     }
     
     /// 根据第一个工作日排序日期列表
-    fileprivate func sortWeeks(_ weeks: [String], firstWorkday: Int) -> [String] {
+    fileprivate func sort(weeks: [String], firstWorkday: Int) -> [String] {
         // 第一个工作日之前的星期
         var beforeArr = [String]()
         for i in 0..<firstWorkday {
@@ -121,6 +157,31 @@ class WeekView: UIView {
         }
         
         return afterArr + beforeArr
+    }
+    
+    /// 今天永远在最右侧排序
+    fileprivate func sortTodayIsRight(weeks: [String]) -> [String] {
+        // 周日 1， 周一~周六： 2 3 4 5 6 7
+        let weekday = Calendar.current.component(.weekday, from: Date())
+        
+        if weekday == 7 {
+            return weeks
+        } else {
+            // 今天
+            let todayArr = [weeks[weekday - 1]]
+            
+            var before1Arr = [String]()
+            for i in 0..<weekday - 1 {
+                before1Arr.append(weeks[i])
+            }
+            
+            var after1Arr = [String]()
+            for i in weekday...weeks.count - 1 {
+                after1Arr.append(weeks[i])
+            }
+            
+            return after1Arr + before1Arr + todayArr
+        }
     }
     
     fileprivate func setupTimer() {
@@ -137,11 +198,29 @@ class WeekView: UIView {
         if currentLanguage.hasPrefix("zh") {
             let weeks = ["日", "一", "二", "三", "四", "五", "六"]
             self.weekday = weeks[weekday - 1]
-            weekTitles = sortWeeks(weeks, firstWorkday: firstWorkday)
+            if sorted == .Normal {
+                weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+            } else {
+                weekTitles = sortTodayIsRight(weeks: weeks)
+                
+                if self.weekdayNumber != weekday {
+                    setupInterface()
+                    self.weekdayNumber = weekday
+                }
+            }
         } else {
             let weeks = ["Sun.", "Mon.", "Tues.", "Wed.", "Thur.", "Fri.", "Sat."]
             self.weekday = weeks[weekday - 1]
-            weekTitles = sortWeeks(weeks, firstWorkday: firstWorkday)
+            if sorted == .Normal {
+                weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+            } else {
+                weekTitles = sortTodayIsRight(weeks: weeks)
+                
+                if self.weekdayNumber != weekday {
+                    setupInterface()
+                    self.weekdayNumber = weekday
+                }
+            }
         }
         
         for weekBtn in weeksButtons {
