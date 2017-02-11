@@ -59,7 +59,6 @@ class CalendarCell: UICollectionViewCell {
                 } else {
                     self.todayIndicator.isHidden = true
                 }
-                
             }
             
             if todayIndicatorTimer == nil {
@@ -78,7 +77,7 @@ class CalendarCell: UICollectionViewCell {
         let todayHeight: CGFloat = 2
         let todayY: CGFloat = self.bounds.height - todayHeight
         todayIndicator.frame = CGRect(x: 0, y: todayY, width: self.bounds.width, height: todayHeight)
-        todayIndicator.backgroundColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        todayIndicator.backgroundColor = appColor
         todayIndicator.layer.cornerRadius = todayIndicator.bounds.height * 0.5
         todayIndicator.isHidden = true
         self.contentView.addSubview(todayIndicator)

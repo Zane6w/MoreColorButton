@@ -129,7 +129,7 @@ class WeekView: UIView {
             weeksButtons.append(weekButton)
             
             self.addSubview(weekButton)
-        }        
+        }
     }
     
     /// 蒙版

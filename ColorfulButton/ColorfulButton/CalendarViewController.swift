@@ -40,7 +40,7 @@ class CalendarViewController: UIViewController {
     /// - 周日、 周一 ~ 周六标识: 0、1 ~ 6
     var firstWeekday = 0
     
-    let naviTitle = "Detail"
+    var naviTitle = ""
     
     /// 语言判断
     var isHanLanguage: Bool {
@@ -64,21 +64,21 @@ class CalendarViewController: UIViewController {
     fileprivate var models: [[StatusModel]]?
     
     // MARK:- 系统函数
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
         loadData()
         
         weekTitleView.frame = CGRect(x: 0, y: (navigationController?.navigationBar.frame.maxY)!, width: UIScreen.main.bounds.width, height: 30)
-        weekTitleView.sorted = .Right
+
         setupInterface()
+        
+        naviTitle = self.title!
         
         weekTitleView.firstWorkday = self.firstWeekday
         
         view.addSubview(weekTitleView)
         
-        self.title = naviTitle
         collectionView?.dataSource = self
         collectionView?.delegate = self
         
@@ -101,15 +101,6 @@ class CalendarViewController: UIViewController {
 
     // MARK:- 界面设置
     fileprivate func setupInterface() {
-        let naviBar = navigationController?.navigationBar
-        let naviBarBottomLine = naviBar?.subviews.first?.subviews.first
-        
-        if (naviBarBottomLine?.isKind(of: UIImageView.self))! {
-            // 隐藏导航栏底部的黑色细线
-            naviBarBottomLine?.isHidden = true
-        }
-        
-        
         // 右上角年份标识
         let yearButton = UIButton(type: .system)
         yearButton.setTitle("\(Calendar.current.component(.year, from: Date()))", for: .normal)
@@ -342,22 +333,28 @@ extension CalendarViewController {
             UIView.animate(withDuration: 0.3, animations: {
                 remarksVC.modalPresentationStyle = .custom
                 self.present(remarksVC, animated: true, completion: nil)
+                self.navigationController?.navigationBar.isHidden = true
                 self.effectView?.alpha = 1.0
             })
 
             // 取消备注后隐藏蒙版
             remarksVC.cancelTapHandler = { (_) in
-                UIView.animate(withDuration: 0.3) {
+                UIView.animate(withDuration: 0.3, animations: {
                     self.effectView?.alpha = 0
-                }
+                }, completion: { (_) in
+                    self.navigationController?.navigationBar.isHidden = false
+                })
+                
                 self.title = self.naviTitle
             }
             
             remarksVC.pinTapHandler = { (_, text) in
-                UIView.animate(withDuration: 0.3) {
+                UIView.animate(withDuration: 0.3, animations: { 
                     self.effectView?.alpha = 0
-                }
-                
+                }, completion: { (_) in
+                    self.navigationController?.navigationBar.isHidden = false
+                })
+
                 self.chooseBtn?.dataStr = text!
                 
                 _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
@@ -522,18 +519,19 @@ extension CalendarViewController: UIGestureRecognizerDelegate {
 class CollectionReusableHeaderView: UICollectionReusableView {
     // MARK: >>> 头部标题
     let title = UILabel()
+
     // MARK: >>> 自定义构造方法
     override init(frame: CGRect) {
         super.init(frame: frame)
         
-        title.frame = CGRect(origin: .zero, size: CGSize(width: self.bounds.width, height: self.bounds.height))
+        title.frame = self.bounds
         title.textAlignment = .center
         title.layer.masksToBounds = true
         title.isOpaque = true
         title.backgroundColor = .white
-        title.font = UIFont.boldSystemFont(ofSize: 18)
+        title.font = UIFont.boldSystemFont(ofSize: 20)
         
-        title.textColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        title.textColor = appColor
         
         addSubview(title)
     }

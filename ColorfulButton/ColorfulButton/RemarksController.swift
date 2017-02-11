@@ -28,6 +28,7 @@ class RemarksController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        print("init")
         setupInterface()
     }
 
@@ -43,6 +44,17 @@ extension RemarksController {
     fileprivate func setupInterface() {
         view.backgroundColor = .clear
         setuprRemarksView()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardChangeFrame(note:)), name: Notification.Name.UIKeyboardDidShow, object: nil)
+    }
+    
+    @objc fileprivate func keyboardChangeFrame(note: Notification) {
+        let keyboardBounds = note.userInfo?["UIKeyboardBoundsUserInfoKey"] as! CGRect
+        let keyboardHeight = keyboardBounds.height
+        // 根据键盘高度修正控件高度
+        remarksView.frame.size.height = UIScreen.main.bounds.height - remarksView.frame.origin.y - keyboardHeight
+        
+        setupRemarksViewSubviews()
     }
     
     /// 设置备注页面
