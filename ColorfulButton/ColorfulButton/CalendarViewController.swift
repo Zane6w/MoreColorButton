@@ -42,19 +42,6 @@ class CalendarViewController: UIViewController {
     
     var naviTitle = ""
     
-    /// 语言判断
-    var isHanLanguage: Bool {
-        // 判断系统当前语言
-        let languages = Locale.preferredLanguages
-        let currentLanguage = languages[0]
-        // 判断是否是中文, 根据语言设置字体样式
-        if currentLanguage.hasPrefix("zh") {
-            return true
-        } else {
-            return false
-        }
-    }
-    
     /// 年份（可根据年份前缀来赋值按钮 ID，可用来查询旧数据）
     let year = 2017
     
@@ -91,6 +78,12 @@ class CalendarViewController: UIViewController {
         collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: normalCell)
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        weekTitleView.weekViewTimer?.invalidate()
+        todayIndicatorTimer?.invalidate()
+    }
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
@@ -115,7 +108,6 @@ class CalendarViewController: UIViewController {
         let frame = CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height))
         collectionView = UICollectionView(frame: frame, collectionViewLayout: layout)
         collectionView?.backgroundColor = .white
-//        collectionView?.collectionViewLayout = layout
         collectionView?.showsVerticalScrollIndicator = false
         
         collectionView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: -footerHeight, right: 0)
@@ -133,7 +125,7 @@ class CalendarViewController: UIViewController {
         view.addSubview(collectionView!)
         
         
-        if isHanLanguage {
+        if isChineseLanguage {
             for i in 1...12 {
                 months.append("\(i)月")
             }
@@ -243,7 +235,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
         DispatchQueue.main.async {
             self.setupInterface(btn: cell.planButton!)
         }
-        
+                
         return cell
     }
     
@@ -281,7 +273,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
 }
 
 // MARK:- 日期判断
-extension CalendarViewController {
+extension CalendarViewController: CAAnimationDelegate {
     /// 日期判断
     /// - 判断点击的日期是否是未来日期
     /// - 未来日期不可选择，不会保存，同时震动提示。
@@ -299,8 +291,28 @@ extension CalendarViewController {
             self.update(operatingButton, isChangeStatus: true)
         } else {
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+            shake(button: (weekTitleView.selectedWeek)!)
             operatingButton.bgStatus = .Base
         }
+    }
+    
+    /// 左右晃动动画
+    fileprivate func shake(button: UIButton) {
+        let shakeAnimation = CAKeyframeAnimation()
+        shakeAnimation.keyPath = "transform.translation.x"
+        // 偏移量
+        let offset = 3
+        // 过程
+        shakeAnimation.values = [-offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0]
+        // 动画时间
+        shakeAnimation.duration = 0.3
+        // 执行次数
+        shakeAnimation.repeatCount = 1
+        // 切出此界面再回来动画不会停止
+        shakeAnimation.isRemovedOnCompletion = true
+        shakeAnimation.delegate = self
+        
+        button.layer.add(shakeAnimation, forKey: "shake")
     }
     
 }
@@ -318,7 +330,7 @@ extension CalendarViewController {
             let monthStr = dateTuples.month
             let dayStr = dateTuples.day
             
-            if self.isHanLanguage {
+            if isChineseLanguage {
                 self.title = "\(monthStr)月\(dayStr)日"
             } else {
                 let englishMonths = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
@@ -376,7 +388,7 @@ extension CalendarViewController {
             button.indicator.isHidden = false
             
             // 判断系统当前语言
-            if isHanLanguage {
+            if isChineseLanguage {
                 button.remarksTitle = "编辑备注"
             } else {
                 button.remarksTitle = "Edit Note"
@@ -386,7 +398,7 @@ extension CalendarViewController {
         } else {
             
             // 判断系统当前语言
-            if isHanLanguage {
+            if isChineseLanguage {
                 button.remarksTitle = "添加备注"
             } else {
                 button.remarksTitle = "Add Note"

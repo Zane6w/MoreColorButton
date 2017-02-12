@@ -8,9 +8,6 @@
 
 import UIKit
 
-/// 顶部日期更新定时器
-var weekViewTimer: Timer?
-
 /// 星期排列方式
 enum SortedType {
     /// 按照给定的第一工作日排序
@@ -26,6 +23,12 @@ class WeekView: UIView {
     fileprivate var weekTitles = [String]()
     
     var blurEffectView: UIVisualEffectView?
+    
+    /// 顶部日期更新定时器
+    var weekViewTimer: Timer?
+    
+    /// 今天的星期（被选中的星期按钮）
+    var selectedWeek: UIButton?
     
     /// 当前日期文字
     var weekday = ""
@@ -79,6 +82,7 @@ class WeekView: UIView {
             for weekBtn in weeksButtons {
                 if (weekBtn.titleLabel?.text)! == self.weekday {
                     weekBtn.isSelected = true
+                    selectedWeek = weekBtn
                 } else {
                     weekBtn.isSelected = false
                 }
@@ -90,6 +94,7 @@ class WeekView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupTimer()
+        setupNotification()
     }
     
     override func removeFromSuperview() {
@@ -98,6 +103,10 @@ class WeekView: UIView {
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
     
     fileprivate func setupInterface() {
@@ -191,7 +200,6 @@ class WeekView: UIView {
     @objc fileprivate func weekTimer() {
         let languages = Locale.preferredLanguages
         let currentLanguage = languages[0]
-        
         // 周一 ~ 周日 对应数字: [ 2 3 4 5 6 7 1 ]
         let weekday = Calendar.current.component(.weekday, from: Date())
         
@@ -230,6 +238,37 @@ class WeekView: UIView {
                 weekBtn.isSelected = false
             }
         }
+    }
+    
+}
+
+// MARK:- 通知相关
+extension WeekView {
+    
+    fileprivate func setupNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(startTimer), name: appDidBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pauseTimer), name: appWillResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pauseTimer), name: appDidEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(invalidateTimer), name: appWillTerminateNotification, object: nil)
+    }
+    
+}
+
+// MARK:- 通知事件处理
+extension WeekView {
+    /// 开启定时器
+    @objc fileprivate func startTimer() {
+        weekViewTimer?.fireDate = Date.distantPast
+    }
+    
+    /// 暂停定时器
+    @objc fileprivate func pauseTimer() {
+        weekViewTimer?.fireDate = Date.distantFuture
+    }
+    
+    /// 消除定时器
+    @objc fileprivate func invalidateTimer() {
+        weekViewTimer?.invalidate()
     }
     
 }

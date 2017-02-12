@@ -30,6 +30,9 @@ extension AddRegularController {
     fileprivate func setupInterface() {
         self.view.backgroundColor = .clear
         
+//        let regularHeight: CGFloat = 
+//        let regularX: CGFloat =
+//        newRegularView.frame = CGRect(x: <#T##CGFloat#>, y: <#T##CGFloat#>, width: <#T##CGFloat#>, height: <#T##CGFloat#>)
     }
     
 }

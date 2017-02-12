@@ -16,10 +16,10 @@
 		D982482E1E4609AD00C88491 /* DateTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = D982482D1E4609AD00C88491 /* DateTool.swift */; };
 		D9C0F0F61E4EEC4600A463D2 /* RegularCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C0F0F51E4EEC4600A463D2 /* RegularCell.swift */; };
 		D9C0F0F81E4F1E4E00A463D2 /* AddRegularController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C0F0F71E4F1E4E00A463D2 /* AddRegularController.swift */; };
+		D9C0F0FA1E4F2BFF00A463D2 /* EditTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9C0F0F91E4F2BFF00A463D2 /* EditTextView.swift */; };
 		D9CF91641E4EBAC8004E316A /* HomeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CF91631E4EBAC8004E316A /* HomeViewController.swift */; };
 		D9CF91661E4EBCE1004E316A /* ContentCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CF91651E4EBCE1004E316A /* ContentCell.swift */; };
 		D9CF91681E4ECA0B004E316A /* Common.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CF91671E4ECA0B004E316A /* Common.swift */; };
-		D9CF916B1E4ECD91004E316A /* UIViewController-Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9CF916A1E4ECD91004E316A /* UIViewController-Extension.swift */; };
 		D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47941E307C7900971C1E /* AppDelegate.swift */; };
 		D9DF47971E307C7900971C1E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9DF47961E307C7900971C1E /* ViewController.swift */; };
 		D9DF479A1E307C7900971C1E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D9DF47981E307C7900971C1E /* Main.storyboard */; };
@@ -44,10 +44,10 @@
 		D982482D1E4609AD00C88491 /* DateTool.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DateTool.swift; sourceTree = "<group>"; };
 		D9C0F0F51E4EEC4600A463D2 /* RegularCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RegularCell.swift; sourceTree = "<group>"; };
 		D9C0F0F71E4F1E4E00A463D2 /* AddRegularController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddRegularController.swift; sourceTree = "<group>"; };
+		D9C0F0F91E4F2BFF00A463D2 /* EditTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditTextView.swift; sourceTree = "<group>"; };
 		D9CF91631E4EBAC8004E316A /* HomeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HomeViewController.swift; sourceTree = "<group>"; };
 		D9CF91651E4EBCE1004E316A /* ContentCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentCell.swift; sourceTree = "<group>"; };
 		D9CF91671E4ECA0B004E316A /* Common.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Common.swift; sourceTree = "<group>"; };
-		D9CF916A1E4ECD91004E316A /* UIViewController-Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "UIViewController-Extension.swift"; sourceTree = "<group>"; };
 		D9DF47911E307C7900971C1E /* ColorfulButton.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ColorfulButton.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		D9DF47941E307C7900971C1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		D9DF47961E307C7900971C1E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -112,14 +112,6 @@
 			path = "Home Page";
 			sourceTree = "<group>";
 		};
-		D9CF91691E4ECD60004E316A /* Tools */ = {
-			isa = PBXGroup;
-			children = (
-				D9CF916A1E4ECD91004E316A /* UIViewController-Extension.swift */,
-			);
-			path = Tools;
-			sourceTree = "<group>";
-		};
 		D9DF47881E307C7900971C1E = {
 			isa = PBXGroup;
 			children = (
@@ -145,8 +137,8 @@
 				D9DF47961E307C7900971C1E /* ViewController.swift */,
 				D9DF47A61E307DB300971C1E /* ColorfulButton.swift */,
 				D92FCEA31E320F690028EAE2 /* RemarksController.swift */,
-				D9CF91691E4ECD60004E316A /* Tools */,
 				D9DF47981E307C7900971C1E /* Main.storyboard */,
+				D9C0F0F91E4F2BFF00A463D2 /* EditTextView.swift */,
 				D9CF91621E4EBA9C004E316A /* Home Page */,
 				D98248201E45B03800C88491 /* Calendar */,
 				D9DF479B1E307C7900971C1E /* Assets.xcassets */,
@@ -291,13 +283,13 @@
 				D9C0F0F81E4F1E4E00A463D2 /* AddRegularController.swift in Sources */,
 				D982481F1E45AF8A00C88491 /* WeekView.swift in Sources */,
 				D9CF91681E4ECA0B004E316A /* Common.swift in Sources */,
-				D9CF916B1E4ECD91004E316A /* UIViewController-Extension.swift in Sources */,
 				D9CF91661E4EBCE1004E316A /* ContentCell.swift in Sources */,
 				D9FA5A1F1E46DD4F005A9525 /* StatusModel.swift in Sources */,
 				D9DF47971E307C7900971C1E /* ViewController.swift in Sources */,
 				D9DF47951E307C7900971C1E /* AppDelegate.swift in Sources */,
 				D92FCEA41E320F690028EAE2 /* RemarksController.swift in Sources */,
 				D98248231E45B05700C88491 /* CalendarCell.swift in Sources */,
+				D9C0F0FA1E4F2BFF00A463D2 /* EditTextView.swift in Sources */,
 				D9C0F0F61E4EEC4600A463D2 /* RegularCell.swift in Sources */,
 				D9CF91641E4EBAC8004E316A /* HomeViewController.swift in Sources */,
 			);

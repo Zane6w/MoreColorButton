@@ -54,18 +54,6 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     
     /// 备注标识
     let indicator = UIView()
-    /// 语言判断
-    var isHanLanguage: Bool {
-        // 判断系统当前语言
-        let languages = Locale.preferredLanguages
-        let currentLanguage = languages[0]
-        // 判断是否是中文, 根据语言设置字体样式
-        if currentLanguage.hasPrefix("zh") {
-            return true
-        } else {
-            return false
-        }
-    }
     
     // MARK:- 方法
     override func awakeFromNib() {
@@ -88,7 +76,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         
         if remarksTitle == nil {
             // 判断系统当前语言
-            if isHanLanguage {
+            if isChineseLanguage {
                 remarksTitle = "添加备注"
             } else {
                 remarksTitle = "Add Note"
@@ -243,7 +231,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
         var badStr: String?
         
         // 判断系统当前语言
-        if isHanLanguage {
+        if isChineseLanguage {
             skipStr = "跳过"
             undoStr = "撤销跳过"
             okStr = "一般"

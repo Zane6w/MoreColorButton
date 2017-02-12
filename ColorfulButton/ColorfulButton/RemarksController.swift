@@ -8,6 +8,13 @@
 
 import UIKit
 
+enum RemarksType {
+    /// 备注模式
+    case remarks
+    /// 添加新内容模式
+    case add
+}
+
 class RemarksController: UIViewController {
     // MARK:- 属性
     let remarksView = UIView()
@@ -18,7 +25,11 @@ class RemarksController: UIViewController {
     var pinTapHandler: TapHandler?
     
     /// 内容区域
-    let textView = UITextView()
+    let textView = EditTextView(frame: .zero, textContainer: nil)
+    /// 标题
+    let titleLabel = UILabel()
+    
+    var style: RemarksType = .add
     
     // MARK:- 系统函数
     override func viewWillAppear(_ animated: Bool) {
@@ -28,7 +39,6 @@ class RemarksController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        print("init")
         setupInterface()
     }
 
@@ -49,6 +59,10 @@ extension RemarksController {
         view.backgroundColor = .clear
         setuprRemarksView()
         
+        if textView.text != nil {
+            textView.placeholderLabel.isHidden = true
+        }
+                
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardChangeFrame(note:)), name: Notification.Name.UIKeyboardDidShow, object: nil)
     }
     
@@ -87,19 +101,39 @@ extension RemarksController {
         // 取消
         let cancelSize = 18
         let cancelFrame = CGRect(x: 10, y: 12, width: cancelSize, height: cancelSize)
-        _ = addButton(frame: cancelFrame, image: UIImage(named: "Cancel")!, action: #selector(cancel))
-        
+
         // 添加备注
         let pinSize: CGFloat = 23
         let pinX = remarksView.bounds.width - 10 - pinSize
         let pinFrame = CGRect(x: pinX, y: 8, width: pinSize, height: pinSize)
-        _ = addButton(frame: pinFrame, image: UIImage(named: "Pin")!, action: #selector(pin))
+        
+        if style == .remarks {
+            _ = addButton(frame: cancelFrame, title: nil, image: #imageLiteral(resourceName: "Cancel"), action: #selector(cancel))
+            _ = addButton(frame: pinFrame, title: nil, image: #imageLiteral(resourceName: "Pin"), action: #selector(pin))
+        } else {
+            var cancelTitle = ""
+            var pinTitle = ""
+            if isChineseLanguage {
+                cancelTitle = "取消"
+                pinTitle = "添加"
+            } else {
+                cancelTitle = "Cancel"
+                pinTitle = "Add"
+            }
+            let cancelButton = addButton(frame: cancelFrame, title: cancelTitle, image: nil, action: #selector(cancel))
+            cancelButton.sizeToFit()
+            
+            let pinButton = addButton(frame: pinFrame, title: pinTitle, image: nil, action: #selector(pin))
+            pinButton.sizeToFit()
+        }
+        
     }
     
     /// 创建添加按钮封装
-    fileprivate func addButton(frame: CGRect, image: UIImage, action: Selector) -> UIButton {
+    fileprivate func addButton(frame: CGRect, title: String?, image: UIImage?, action: Selector) -> UIButton {
         let actionButton = UIButton(type: .system)
         actionButton.setImage(image, for: .normal)
+        actionButton.setTitle(title, for: .normal)
         actionButton.frame = frame
         actionButton.addTarget(self, action: action, for: .touchUpInside)
         remarksView.addSubview(actionButton)
@@ -109,16 +143,23 @@ extension RemarksController {
     /* ---------- */
     /// 设置标题
     fileprivate func setTitleLabel() {
-        let titleLabel = UILabel()
-        
         // 判断系统当前语言
         let languages = Locale.preferredLanguages
         let currentLanguage = languages[0]
+        
         // 判断是否是中文, 根据语言设置字体样式
         if currentLanguage.hasPrefix("zh") {
-            titleLabel.text = "添加备注"
+            if style == .remarks {
+                titleLabel.text = "添加备注"
+            } else {
+                titleLabel.text = "新的规律"
+            }
         } else {
-            titleLabel.text = "Add Note"
+            if style == .remarks {
+                titleLabel.text = "Add Note"
+            } else {
+                titleLabel.text = "Add Regular"
+            }
         }
 
         titleLabel.font = UIFont.boldSystemFont(ofSize: 18)
@@ -165,7 +206,7 @@ extension RemarksController {
 }
 
 // MARK:- TextView 相关
-extension RemarksController {
+extension RemarksController: UITextViewDelegate {
     /// 设置 TextView
     fileprivate func setTextView(indicator: UIView) {
         textView.frame = CGRect(x: 0, y: indicator.frame.maxY + 1, width: remarksView.bounds.width, height: remarksView.bounds.height - indicator.frame.maxY - 8)
@@ -173,7 +214,23 @@ extension RemarksController {
         textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         // 光标颜色
         textView.tintColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1.0)
+        
+        textView.delegate = self
+        
+        if style == .remarks {
+            textView.placeholderLabel.isHidden = true
+        } else {
+            if textView.text == "" {
+                textView.placeholderLabel.isHidden = false
+            }
+        }
+        
         remarksView.addSubview(textView)
+    }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        // 监听文字的改变, 动态显示或隐藏占位文字
+        self.textView.placeholderLabel.isHidden = textView.hasText
     }
     
 }

@@ -17,19 +17,6 @@ class CalendarCell: UICollectionViewCell {
     var planButton: ColorfulButton?
     // 今天日期标识指示器
     let todayIndicator = UIView()
-        
-    /// 语言判断
-    var isHanLanguage: Bool {
-        // 判断系统当前语言
-        let languages = Locale.preferredLanguages
-        let currentLanguage = languages[0]
-        // 判断是否是中文, 根据语言设置字体样式
-        if currentLanguage.hasPrefix("zh") {
-            return true
-        } else {
-            return false
-        }
-    }
     
     /// 按钮模型属性
     var model: StatusModel? {
@@ -81,6 +68,8 @@ class CalendarCell: UICollectionViewCell {
         todayIndicator.layer.cornerRadius = todayIndicator.bounds.height * 0.5
         todayIndicator.isHidden = true
         self.contentView.addSubview(todayIndicator)
+        
+        setupNotification()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -88,8 +77,13 @@ class CalendarCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     /// 随时更新"今天的标识"
     @objc fileprivate func updateTodayIndicator() {
+        print("today")
         let nowDateStr = DateTool.shared.getCompactDate()
         
         if (self.planButton?.id)! == nowDateStr {
@@ -105,7 +99,7 @@ class CalendarCell: UICollectionViewCell {
             button.indicator.isHidden = false
             
             // 判断系统当前语言
-            if isHanLanguage {
+            if isChineseLanguage {
                 button.remarksTitle = "编辑备注"
             } else {
                 button.remarksTitle = "Edit Note"
@@ -115,7 +109,7 @@ class CalendarCell: UICollectionViewCell {
         } else {
             
             // 判断系统当前语言
-            if isHanLanguage {
+            if isChineseLanguage {
                 button.remarksTitle = "添加备注"
             } else {
                 button.remarksTitle = "Add Note"
@@ -124,6 +118,37 @@ class CalendarCell: UICollectionViewCell {
             button.indicator.isHidden = true
             button.reloadMenu()
         }
+    }
+    
+}
+
+// MARK:- 通知相关
+extension CalendarCell {
+    
+    fileprivate func setupNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(startTimer), name: appDidBecomeActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pauseTimer), name: appWillResignActiveNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(pauseTimer), name: appDidEnterBackgroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(invalidateTimer), name: appWillTerminateNotification, object: nil)
+    }
+    
+}
+
+// MARK:- 通知事件处理
+extension CalendarCell {
+    /// 开启定时器
+    @objc fileprivate func startTimer() {
+        todayIndicatorTimer?.fireDate = Date.distantPast
+    }
+    
+    /// 暂停定时器
+    @objc fileprivate func pauseTimer() {
+        todayIndicatorTimer?.fireDate = Date.distantFuture
+    }
+    
+    /// 消除定时器
+    @objc fileprivate func invalidateTimer() {
+        todayIndicatorTimer?.invalidate()
     }
     
 }

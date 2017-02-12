@@ -24,3 +24,44 @@ var isChineseLanguage: Bool {
         return false
     }
 }
+
+// MARK:- 通知名称
+
+/// **将要** "退到桌面" 或 "多任务界面" 通知
+let appWillResignActiveNotification = Notification.Name(rawValue: "appWillResignActive")
+
+/// 后台模式（多任务选择了其他的 APP 或 回到了桌面）通知
+let appDidEnterBackgroundNotification = Notification.Name(rawValue: "appDidEnterBackground")
+
+/// 将要进入前台模式 通知
+let appWillEnterForegroundNotification = Notification.Name(rawValue: "appWillEnterForeground")
+
+/// 前台运行模式 通知
+let appDidBecomeActiveNotification = Notification.Name(rawValue: "appDidBecomeActive")
+
+/// 程序准备关闭
+let appWillTerminateNotification = Notification.Name(rawValue: "appWillTerminate")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
