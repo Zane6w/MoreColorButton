@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import AudioToolbox
 
 private let contentIdentifier = "contentCell"
 
@@ -14,12 +15,25 @@ class HomeViewController: UIViewController {
     // MARK:- 属性
     var tableView: UITableView?
     
+    let weekTitleView = WeekView()
+    
+    var effectView: UIVisualEffectView?
+    
+    /// 规律数据库
+    var regularDatabase = [Any]()
+    
+    /// 标题数组
+    var titles = [String]()
     
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
         setupTableView()
+        setupWeekTitleView()
+        
+        loadTitleData()
+    
     }
 
     override func didReceiveMemoryWarning() {
@@ -46,7 +60,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 20
+        return titles.count
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -56,6 +70,10 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: contentIdentifier, for: indexPath) as! ContentCell
+
+        if titles.count != 0 {
+            cell.identifyLabel.text = titles[indexPath.row]
+        }
         
         cell.selectionStyle = .none
         
@@ -66,7 +84,8 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         
         let detailController = CalendarViewController()
         
-        detailController.title = "ceshi"
+        detailController.title = titles[indexPath.row]
+        detailController.identifier = titles[indexPath.row]
         
         navigationController?.pushViewController(detailController, animated: true)
     }
@@ -74,7 +93,7 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
 }
 
 // MARK:- 导航栏设置
-extension HomeViewController {
+extension HomeViewController: CAAnimationDelegate {
     
     fileprivate func setupNavigationBar() {
         let naviBar = navigationController?.navigationBar
@@ -95,13 +114,28 @@ extension HomeViewController {
             self.title = "Regular"
         }
         
-        let editRegularItem = UIBarButtonItem(barButtonSystemItem: .edit, target: self, action: #selector(editRegular))
-        editRegularItem.style = .plain
+        // -----------------
+        
+        let editButton = UIButton(type: .system)
+        editButton.setTitle("Edit", for: .normal)
+        editButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
+        editButton.frame = CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width / 7, height: (navigationController?.navigationBar.bounds.height)!))
+        editButton.tintColor = appColor
+        
+        editButton.contentVerticalAlignment = .center
+        editButton.contentHorizontalAlignment = .left
+        
+        editButton.addTarget(self, action: #selector(editRegular), for: .touchUpInside)
+        
+        let editRegularItem = UIBarButtonItem(customView: editButton)
+        
+        navigationItem.leftBarButtonItem = editRegularItem
+        
+        // -----------------
         
         let addNewRegularItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addNewRegular))
         addNewRegularItem.style = .plain
         
-        navigationItem.leftBarButtonItem = editRegularItem
         navigationItem.rightBarButtonItem = addNewRegularItem
         
     }
@@ -111,13 +145,174 @@ extension HomeViewController {
     }
     
     @objc fileprivate func addNewRegular() {
-        print("add")
+        let remarksVC = RemarksController()
+        remarksVC.style = .add
+        
+        setupBlur()
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            remarksVC.modalPresentationStyle = .custom
+            self.present(remarksVC, animated: true, completion: nil)
+            self.navigationController?.navigationBar.isHidden = true
+            self.effectView?.alpha = 1.0
+        })
+        
+        // 取消备注后隐藏蒙版
+        remarksVC.cancelTapHandler = { (_) in
+            UIView.animate(withDuration: 0.3, animations: {
+                self.effectView?.alpha = 0
+            }, completion: { (_) in
+                self.navigationController?.navigationBar.isHidden = false
+            })
+        }
+
+        remarksVC.pinTapHandler = { (controller, text) in
+            if text! == "" {
+                AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+                self.shake(view: controller.remarksView)
+            } else {
+                // 添加数据
+                self.loadTitleData(title: text!)
+                //let oneYearData = self.createRegularData(title: text!)
+                //self.regularDatabase.insert(oneYearData, at: 0)
+                
+                
+                self.dismiss(animated: true, completion: nil)
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.effectView?.alpha = 0
+                }, completion: { (_) in
+                    self.navigationController?.navigationBar.isHidden = false
+                })
+            }
+            
+            
+        }
+        
+    }
+    
+    fileprivate func setupBlur() {
+        let effect = UIBlurEffect(style: .dark)
+        effectView = UIVisualEffectView(effect: effect)
+        effectView?.frame = UIScreen.main.bounds
+        effectView?.alpha = 0
+        view.addSubview(effectView!)
+    }
+    
+    /// 左右晃动动画
+    fileprivate func shake(view: UIView) {
+        let shakeAnimation = CAKeyframeAnimation()
+        shakeAnimation.keyPath = "transform.translation.x"
+        // 偏移量
+        let offset = 5
+        // 过程
+        shakeAnimation.values = [-offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0]
+        // 动画时间
+        shakeAnimation.duration = 0.3
+        // 执行次数
+        shakeAnimation.repeatCount = 1
+        // 切出此界面再回来动画不会停止
+        shakeAnimation.isRemovedOnCompletion = true
+        shakeAnimation.delegate = self
+        
+        view.layer.add(shakeAnimation, forKey: "shake")
+    }
+    
+    fileprivate func setupWeekTitleView() {
+        weekTitleView.frame = CGRect(x: 0, y: (navigationController?.navigationBar.frame.maxY)!, width: UIScreen.main.bounds.width, height: 30)
+        weekTitleView.sorted = .Right
+        weekTitleView.firstWorkday = 0
+        
+        self.view.addSubview(weekTitleView)
+        
+        tableView?.contentInset = UIEdgeInsets(top: weekTitleView.bounds.height, left: 0, bottom: 0, right: 0)
     }
     
 }
 
-
-
+// MARK:- 数据相关
+extension HomeViewController {
+    /// 创建新数据
+    /// - parameter title: 标题
+    fileprivate func createRegularData(title: String) -> [[StatusModel]] {
+        // 一年的所有数据
+        var oneYearsDataModels = [[StatusModel]]()
+        
+        // 当前的年
+        let year = "\(Calendar.current.component(.year, from: Date()))"
+        
+        // 一年中每个月有几天数组
+        let daysOfMonth = DateTool.shared.getDayOfMonth(year: "\(year)")
+        
+        var monthNum = 1
+        var id = ""
+        for days in daysOfMonth {
+            var monthStatus = [StatusModel]()
+            for i in 1...days {
+                var dict = [String: Any]()
+                
+                if monthNum.description.characters.count == 1 {
+                    if i.description.characters.count == 1 {
+                        id = "\(title)#\(year)0\(monthNum)0\(i)"
+                    } else {
+                        id = "\(title)#\(year)0\(monthNum)\(i)"
+                    }
+                } else {
+                    if i.description.characters.count == 1 {
+                        id = "\(title)#\(year)\(monthNum)0\(i)"
+                    } else {
+                        id = "\(title)#\(year)\(monthNum)\(i)"
+                    }
+                }
+                
+                dict["id"] = id
+                
+                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: id)
+                if dataArray != nil, dataArray?.count != 0 {
+                    let savedID = dataArray?[0] as! String
+                    let savedStatus = dataArray?[1] as! String
+                    let savedRemark = dataArray?[2] as! String
+                    
+                    if savedID == id {
+                        dict["status"] = savedStatus
+                        dict["dataStr"] = savedRemark
+                        dict["dayStr"] = "\(i)"
+                    }
+                } else {
+                    dict["status"] = "Base"
+                    dict["dataStr"] = ""
+                    dict["dayStr"] = "\(i)"
+                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
+                }
+                
+                let status = StatusModel(dict: dict)
+                monthStatus.append(status)
+            }
+            monthNum += 1
+            oneYearsDataModels.append(monthStatus)
+        }
+        
+        return oneYearsDataModels
+    }
+    
+    /// 加载标题数据
+    fileprivate func loadTitleData(title: String? = nil) {
+        if title == nil {
+            let titleArray = SQLite.shared.queryAllTitle(inTable: regularDataBase)
+            if titleArray != nil, titleArray?.count != 0 {
+                var titles = titleArray!
+                titles.reverse()
+                self.titles = titles as! [String]
+            }
+        } else {
+            _ = SQLite.shared.insert(title: title!, inTable: regularDataBase)
+            self.titles.insert(title!, at: 0)
+        }
+        tableView?.reloadData()
+    }
+    
+    
+    
+}
 
 
 

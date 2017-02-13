@@ -60,7 +60,7 @@ class SQLite: NSObject {
     /// 创建表
     fileprivate func createTable() -> Bool {
         db?.open()
-        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT);"
+        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT,title TEXT);"
         
         if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
             remind("创建表成功")
@@ -83,12 +83,36 @@ class SQLite: NSObject {
         
         var sql: String?
         if inTable == nil {
-            sql = "INSERT INTO \(tableName!) (btnID,status,remark) VALUES (?,?,?);"
+            sql = "INSERT INTO \(tableName!) (btnID,status,remark,title) VALUES (?,?,?,?);"
         } else {
-            sql = "INSERT INTO \(inTable!) (btnID,status,remark) VALUES (?,?,?);"
+            sql = "INSERT INTO \(inTable!) (btnID,status,remark,title) VALUES (?,?,?,?);"
+        }
+        let title = "nil"
+        if (db?.executeUpdate(sql, withArgumentsIn: [id, status, remark, title]))! {
+            remind("插入数据成功")
+            db?.commit()
+            db?.close()
+            return true
+        } else {
+            remind("插入数据失败")
+            db?.rollback()
+            db?.close()
+            return false
+        }
+    }
+    
+    func insert (title: String, inTable: String? = nil) -> Bool {
+        db?.open()
+        db?.beginTransaction()
+        
+        var sql: String?
+        if inTable == nil {
+            sql = "INSERT INTO \(tableName!) (title) VALUES (?);"
+        } else {
+            sql = "INSERT INTO \(inTable!) (title) VALUES (?);"
         }
         
-        if (db?.executeUpdate(sql, withArgumentsIn: [id, status, remark]))! {
+        if (db?.executeUpdate(sql, withArgumentsIn: [title]))! {
             remind("插入数据成功")
             db?.commit()
             db?.close()
@@ -107,12 +131,23 @@ class SQLite: NSObject {
     func queryAll(inTable: String? = nil) -> [Any]? {
         var sql: String?
         if inTable == nil {
-            sql = "SELECT * FROM \(tableName!);"
+            sql = "SELECT btnID,status,remark FROM \(tableName!);"
         } else {
-            sql = "SELECT * FROM \(inTable!);"
+            sql = "SELECT btnID,status,remark FROM \(inTable!);"
         }
         
         return packQuery(sql: sql!)
+    }
+    
+    func queryAllTitle(inTable: String? = nil) -> [Any]? {
+        var sql: String?
+        if inTable == nil {
+            sql = "SELECT title FROM \(tableName!);"
+        } else {
+            sql = "SELECT title FROM \(inTable!);"
+        }
+        
+        return packQuery(sql: sql!, isFull: false)
     }
     
     /// 查询符合ID条件的数据
@@ -121,17 +156,18 @@ class SQLite: NSObject {
     func query(inTable: String? = nil, id: String) -> [Any]? {
         var sql: String?
         if inTable == nil {
-            sql = "SELECT * FROM \(tableName!) WHERE btnID = '\(id)';"
+            sql = "SELECT btnID,status,remark FROM \(tableName!) WHERE btnID = '\(id)';"
         } else {
-            sql = "SELECT * FROM \(inTable!) WHERE btnID = '\(id)';"
+            sql = "SELECT btnID,status,remark FROM \(inTable!) WHERE btnID = '\(id)';"
         }
         
-        return packQuery(sql: sql!)
+        return packQuery(sql: sql!, isFull: true)
     }
     
     /// 封装查询
     /// - parameter sql: 查询语句
-    fileprivate func packQuery(sql: String) -> [Any]? {
+    /// - parameter isFull: 是否获取全部数据（默认：true）
+    fileprivate func packQuery(sql: String, isFull: Bool = true) -> [Any]? {
         db?.open()
         
         let set = db?.executeQuery(sql, withArgumentsIn: nil)
@@ -145,10 +181,17 @@ class SQLite: NSObject {
             let id = set?.object(forColumnName: "btnID")
             let status = set?.object(forColumnName: "status")
             let remark = set?.object(forColumnName: "remark")
-            if let id = id, let status = status, let remark = remark {
-                tempArray.append(id)
-                tempArray.append(status)
-                tempArray.append(remark)
+            let title = set?.object(forColumnName: "title")
+            if let id = id, let status = status, let remark = remark, let title = title {
+                if isFull {
+                    tempArray.append(id)
+                    tempArray.append(status)
+                    tempArray.append(remark)
+                } else {
+                    if title as! String != "nil" {
+                        tempArray.append(title)
+                    }
+                }
             }
         }
         

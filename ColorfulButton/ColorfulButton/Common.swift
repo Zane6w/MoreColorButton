@@ -14,6 +14,13 @@ let appColor = UIColor(red: 88/255.0, green: 170/255.0, blue: 23/255.0, alpha: 1
 /// 语言判断
 var isChineseLanguage: Bool {
     // 判断系统当前语言
+    /*
+     en-US: 英语美国
+     en-GB: 英语英国
+     zh-Hans-US: 中文-简体-地区美国
+     zh-Hant-US: 中文-繁体-地区美国
+     ja-CN: 日语-地区中国
+     */
     let languages = Locale.preferredLanguages
     let currentLanguage = languages[0]
     
@@ -43,7 +50,8 @@ let appDidBecomeActiveNotification = Notification.Name(rawValue: "appDidBecomeAc
 let appWillTerminateNotification = Notification.Name(rawValue: "appWillTerminate")
 
 
-
+/// 时间改变通知
+let timeChangeNotification = Notification.Name("timeChange")
 
 
 

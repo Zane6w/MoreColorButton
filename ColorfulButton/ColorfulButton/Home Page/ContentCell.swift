@@ -26,6 +26,13 @@ class ContentCell: UITableViewCell {
     
     var cellHeight: CGFloat = 0
     
+    /// 主页数据模型
+    var regularModels: [[StatusModel]]? {
+        didSet {
+            
+        }
+    }
+    
     // MARK:- 系统函数
     override func awakeFromNib() {
         super.awakeFromNib()

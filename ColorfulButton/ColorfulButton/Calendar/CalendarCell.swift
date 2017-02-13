@@ -21,22 +21,22 @@ class CalendarCell: UICollectionViewCell {
     /// 按钮模型属性
     var model: StatusModel? {
         didSet {
-            planButton?.becomeFirstResponder()
+            self.planButton?.becomeFirstResponder()
             
-            planButton?.id = (self.model?.id)!
-            planButton?.setTitle((self.model?.dayStr)!, for: .normal)
-            planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
-            planButton?.dataStr = (self.model?.dataStr)!
+            self.planButton?.id = (self.model?.id)!
+            //self.planButton?.setTitle((self.model?.dayStr)!, for: .normal)
+            self.planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
+            self.planButton?.dataStr = (self.model?.dataStr)!
             
-            if model?.dataStr != "" {
-                planButton?.indicator.isHidden = false
+            if self.model?.dataStr != "" {
+                self.planButton?.indicator.isHidden = false
             } else {
-                planButton?.indicator.isHidden = true
+                self.planButton?.indicator.isHidden = true
             }
             
-            opinionIndicator(button: planButton!, text: (planButton?.dataStr)!)
+            self.opinionIndicator(button: self.planButton!, text: (self.planButton?.dataStr)!)
             
-            planButton?.resignFirstResponder()
+            self.planButton?.resignFirstResponder()
             
             DispatchQueue.main.async {
                 let nowDateStr = DateTool.shared.getCompactDate()
@@ -48,9 +48,9 @@ class CalendarCell: UICollectionViewCell {
                 }
             }
             
-            if todayIndicatorTimer == nil {
-                todayIndicatorTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTodayIndicator), userInfo: nil, repeats: true)
-            }
+//            if todayIndicatorTimer == nil {
+//                todayIndicatorTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTodayIndicator), userInfo: nil, repeats: true)
+//            }
         }
     }
     
@@ -83,7 +83,6 @@ class CalendarCell: UICollectionViewCell {
     
     /// 随时更新"今天的标识"
     @objc fileprivate func updateTodayIndicator() {
-        print("today")
         let nowDateStr = DateTool.shared.getCompactDate()
         
         if (self.planButton?.id)! == nowDateStr {

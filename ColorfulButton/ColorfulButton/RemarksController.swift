@@ -29,7 +29,7 @@ class RemarksController: UIViewController {
     /// 标题
     let titleLabel = UILabel()
     
-    var style: RemarksType = .add
+    var style: RemarksType = .remarks
     
     // MARK:- 系统函数
     override func viewWillAppear(_ animated: Bool) {
@@ -92,8 +92,8 @@ extension RemarksController {
     fileprivate func setupRemarksViewSubviews() {
         let splitLine = setSplitLine()
         setTextView(indicator: splitLine)
-        setActionButton()
         setTitleLabel()
+        setActionButton()
     }
     
     /// 操作按钮
@@ -197,7 +197,7 @@ extension RemarksController {
     /// 添加备注
     @objc fileprivate func pin() {
         textView.resignFirstResponder()
-        dismiss(animated: true, completion: nil)
+        //dismiss(animated: true, completion: nil)
         if pinTapHandler != nil {
             pinTapHandler!(self, textView.text)
         }

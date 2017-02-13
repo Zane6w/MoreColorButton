@@ -21,84 +21,76 @@ class WeekView: UIView {
     // MARK:- 属性
     /// 星期数组
     fileprivate var weekTitles = [String]()
-    
-    var blurEffectView: UIVisualEffectView?
+    /// 蒙版
+    fileprivate var blurEffectView: UIVisualEffectView?
     
     /// 顶部日期更新定时器
     var weekViewTimer: Timer?
     
     /// 今天的星期（被选中的星期按钮）
-    var selectedWeek: UIButton?
+    var selectedWeek: UIButton? {
+        didSet {
+            NotificationCenter.default.post(Notification(name: timeChangeNotification))
+        }
+    }
     
     /// 当前日期文字
-    var weekday = ""
+    fileprivate var weekday = ""
     /// 当前日期数字
-    var weekdayNumber = 1
+    fileprivate var weekdayNumber = 1
     
-    var weeksButtons = [UIButton]()
+    /// 当前月份
+    fileprivate var month = 1
+    
+    /// 所有按钮数组
+    fileprivate var weeksButtons = [UIButton]()
+    
     /// 排序方式（默认安给定的第一个工作日排序）
     var sorted: SortedType = .Normal
+    
+    /// 中文日期标题数组
+    fileprivate let chineseWeekTitles = ["日", "一", "二", "三", "四", "五", "六"]
+    /// 其他语言日期标题数组
+    fileprivate let otherLanguageWeekTitles = ["Sun.", "Mon.", "Tues.", "Wed.", "Thur.", "Fri.", "Sat."]
     
     /// 首个工作日（默认星期日: 0）
     /// - 周日、 周一 ~ 周六标识: 0、1 ~ 6
     var firstWorkday = 0 {
         didSet {
-            // 判断系统当前语言
-            let languages = Locale.preferredLanguages
-            let currentLanguage = languages[0]
-            // 判断是否是中文, 根据语言设置字体样式
-            /*
-             en-US: 英语美国
-             en-GB: 英语英国
-             zh-Hans-US: 中文-简体-地区美国
-             zh-Hant-US: 中文-繁体-地区美国
-             ja-CN: 日语-地区中国
-             */
-            
             // 周一 ~ 周日 对应数字: [ 2 3 4 5 6 7 1 ]
             let weekday = Calendar.current.component(.weekday, from: Date())
             self.weekdayNumber = weekday
             
-            if currentLanguage.hasPrefix("zh") {
-                let weeks = ["日", "一", "二", "三", "四", "五", "六"]
-                self.weekday = weeks[weekday - 1]
+            if isChineseLanguage {
+                self.weekday = chineseWeekTitles[weekday - 1]
                 if sorted == .Normal {
-                    weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                    weekTitles = sort(weeks: chineseWeekTitles, firstWorkday: firstWorkday)
                 } else {
-                    weekTitles = sortTodayIsRight(weeks: weeks)
+                    weekTitles = sortTodayIsRight(weeks: chineseWeekTitles)
                 }
             } else {
-                let weeks = ["Sun.", "Mon.", "Tues.", "Wed.", "Thur.", "Fri.", "Sat."]
-                self.weekday = weeks[weekday - 1]
+                self.weekday = otherLanguageWeekTitles[weekday - 1]
                 if sorted == .Normal {
-                    weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                    weekTitles = sort(weeks: otherLanguageWeekTitles, firstWorkday: firstWorkday)
                 } else {
-                    weekTitles = sortTodayIsRight(weeks: weeks)
+                    weekTitles = sortTodayIsRight(weeks: otherLanguageWeekTitles)
                 }
             }
             
             setupInterface()
             
-            for weekBtn in weeksButtons {
-                if (weekBtn.titleLabel?.text)! == self.weekday {
-                    weekBtn.isSelected = true
-                    selectedWeek = weekBtn
-                } else {
-                    weekBtn.isSelected = false
-                }
-            }
+            opinionSelectedButton()
         }
     }
     
     // MARK:- 方法函数
     override init(frame: CGRect) {
         super.init(frame: frame)
+        
+        self.month = Calendar.current.component(.month, from: Date())
+        
         setupTimer()
         setupNotification()
-    }
-    
-    override func removeFromSuperview() {
-        super.removeFromSuperview()
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -179,17 +171,17 @@ class WeekView: UIView {
             // 今天
             let todayArr = [weeks[weekday - 1]]
             
-            var before1Arr = [String]()
+            var beforeArr = [String]()
             for i in 0..<weekday - 1 {
-                before1Arr.append(weeks[i])
+                beforeArr.append(weeks[i])
             }
             
-            var after1Arr = [String]()
+            var afterArr = [String]()
             for i in weekday...weeks.count - 1 {
-                after1Arr.append(weeks[i])
+                afterArr.append(weeks[i])
             }
             
-            return after1Arr + before1Arr + todayArr
+            return afterArr + beforeArr + todayArr
         }
     }
     
@@ -198,18 +190,15 @@ class WeekView: UIView {
     }
     
     @objc fileprivate func weekTimer() {
-        let languages = Locale.preferredLanguages
-        let currentLanguage = languages[0]
         // 周一 ~ 周日 对应数字: [ 2 3 4 5 6 7 1 ]
         let weekday = Calendar.current.component(.weekday, from: Date())
         
-        if currentLanguage.hasPrefix("zh") {
-            let weeks = ["日", "一", "二", "三", "四", "五", "六"]
-            self.weekday = weeks[weekday - 1]
+        if isChineseLanguage {
+            self.weekday = chineseWeekTitles[weekday - 1]
             if sorted == .Normal {
-                weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                weekTitles = sort(weeks: chineseWeekTitles, firstWorkday: firstWorkday)
             } else {
-                weekTitles = sortTodayIsRight(weeks: weeks)
+                weekTitles = sortTodayIsRight(weeks: chineseWeekTitles)
                 
                 if self.weekdayNumber != weekday {
                     setupInterface()
@@ -217,12 +206,11 @@ class WeekView: UIView {
                 }
             }
         } else {
-            let weeks = ["Sun.", "Mon.", "Tues.", "Wed.", "Thur.", "Fri.", "Sat."]
-            self.weekday = weeks[weekday - 1]
+            self.weekday = otherLanguageWeekTitles[weekday - 1]
             if sorted == .Normal {
-                weekTitles = sort(weeks: weeks, firstWorkday: firstWorkday)
+                weekTitles = sort(weeks: otherLanguageWeekTitles, firstWorkday: firstWorkday)
             } else {
-                weekTitles = sortTodayIsRight(weeks: weeks)
+                weekTitles = sortTodayIsRight(weeks: otherLanguageWeekTitles)
                 
                 if self.weekdayNumber != weekday {
                     setupInterface()
@@ -231,9 +219,23 @@ class WeekView: UIView {
             }
         }
         
+        opinionSelectedButton()
+    }
+    
+    /// 判断选中哪个按钮
+    fileprivate func opinionSelectedButton() {
         for weekBtn in weeksButtons {
             if (weekBtn.titleLabel?.text)! == self.weekday {
                 weekBtn.isSelected = true
+                let month = Calendar.current.component(.month, from: Date())
+                if selectedWeek != weekBtn {
+                    selectedWeek = weekBtn
+                }
+                
+                if self.month != month {
+                    selectedWeek = weekBtn
+                }
+                
             } else {
                 weekBtn.isSelected = false
             }

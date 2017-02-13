@@ -50,11 +50,25 @@ class CalendarViewController: UIViewController {
     
     fileprivate var models: [[StatusModel]]?
     
+    var identifier: String? {
+        didSet {
+//            loadData(title: identifier!)
+        }
+    }
+    
+    var statusCache = [String: Any]()
+    var dataStrCache = [String: Any]()
+    var todayStr = ""
+    var calendarTimer: Timer?
+    
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        loadData()
+
+        // 今天的日期 ID
+        let date = DateTool.shared.getCompactDate(dateFormat: "MMdd")
+        let todayID = "\(date)"
+        self.todayStr = todayID
         
         weekTitleView.frame = CGRect(x: 0, y: (navigationController?.navigationBar.frame.maxY)!, width: UIScreen.main.bounds.width, height: 30)
 
@@ -64,7 +78,7 @@ class CalendarViewController: UIViewController {
         
         weekTitleView.firstWorkday = self.firstWeekday
         
-        view.addSubview(weekTitleView)
+        self.view.addSubview(weekTitleView)
         
         collectionView?.dataSource = self
         collectionView?.delegate = self
@@ -76,8 +90,16 @@ class CalendarViewController: UIViewController {
         collectionView?.register(CalendarCell.self, forCellWithReuseIdentifier: collectionCellIdentifier)
         
         collectionView?.register(UICollectionViewCell.self, forCellWithReuseIdentifier: normalCell)
+        
+        setupNotification()
     }
     
+    // 所有子控件都加载完毕
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        scrollToThisMonth()
+    }
+
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
         weekTitleView.weekViewTimer?.invalidate()
@@ -88,8 +110,12 @@ class CalendarViewController: UIViewController {
         super.didReceiveMemoryWarning()
     }
     
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        //print(scrollView.contentOffset.y)
+        
     }
 
     // MARK:- 界面设置
@@ -223,14 +249,74 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     fileprivate func createCalendarCell(_ collectionView: UICollectionView, _ indexPath: IndexPath, row: Int) -> CalendarCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: collectionCellIdentifier, for: indexPath) as! CalendarCell
         
+        /* 给按钮注册、放弃 第一响应者
+         防止通过"弹出菜单"设置按钮背景状态时,
+         同时滚动造成的按钮消失的问题.
+         */
+        cell.planButton?.becomeFirstResponder()
+        cell.planButton?.resignFirstResponder()
+        
         cell.planButton?.buttonTapHandler = { (operatingButton) in
+            // 设置按钮状态颜色
+            self.statusCache["\((operatingButton.id)!)"] = operatingButton.bgStatus.rawValue
+            
             /* 判断点击的日期是否是未来日期
              未来日期不可选择, 不会保存, 同时震动提示
              */
             self.opinionDate(operatingButton)
         }
+        
+        // 设置按钮日期文字
+        cell.planButton?.setTitle("\(row + 1)", for: .normal)
+        
+        /* 设置按钮 ID */
+        var sectionStr = ""
+        
+        if (indexPath.section + 1).description.characters.count == 1 {
+            sectionStr = "0\(indexPath.section + 1)"
+        } else {
+            sectionStr = "\(indexPath.section + 1)"
+        }
+        
+        var rowStr = ""
+        if (row + 1).description.characters.count == 1 {
+            rowStr = "0\(row + 1)"
+        } else {
+            rowStr = "\(row + 1)"
+        }
 
-        cell.model = self.models?[indexPath.section][row]
+        cell.planButton?.id = "\(naviTitle)#\(year)\(sectionStr)\(rowStr)"
+        
+        if "\(sectionStr)\(rowStr)" == self.todayStr {
+            cell.todayIndicator.isHidden = false
+        } else {
+            cell.todayIndicator.isHidden = true
+        }
+        
+        /* ---------- */
+        // 设置按钮状态颜色
+        if statusCache["\((cell.planButton?.id)!)"] == nil {
+            cell.planButton?.bgStatus = .Base
+            statusCache["\((cell.planButton?.id)!)"] = "Base"
+        } else {
+            let statusStr = statusCache["\((cell.planButton?.id)!)"] as! String
+            cell.planButton?.bgStatus = StatusType(rawValue: statusStr)!
+        }
+        /* ---------- */
+        // 备注相关设置
+        if dataStrCache["\((cell.planButton?.id)!)"] == nil {
+            dataStrCache["\((cell.planButton?.id)!)"] = ""
+        } else {
+            cell.planButton?.dataStr = (dataStrCache["\((cell.planButton?.id)!)"] as! String)
+        }
+        
+        // 备注小圆点指示器判断
+        if cell.planButton?.dataStr != nil {
+            opinionIndicator(button: (cell.planButton)!, text: (cell.planButton?.dataStr)!)
+        }
+        /* ---------- */
+        
+//        cell.model = self.models?[indexPath.section][row]
         
         DispatchQueue.main.async {
             self.setupInterface(btn: cell.planButton!)
@@ -272,7 +358,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
     
 }
 
-// MARK:- 日期判断
+// MARK:- 日期相关
 extension CalendarViewController: CAAnimationDelegate {
     /// 日期判断
     /// - 判断点击的日期是否是未来日期
@@ -280,28 +366,38 @@ extension CalendarViewController: CAAnimationDelegate {
     /// - parameter operatingButton: 点击的按钮
     fileprivate func opinionDate(_ operatingButton: ColorfulButton) {
         let nowDateStr = DateTool.shared.getCompactDate()
+        // ID 的范围
+        let fullRnage = Range(uncheckedBounds: (lower: (operatingButton.id)!.startIndex, upper: (operatingButton.id)!.endIndex))
         
-        if Int((operatingButton.id)!)! <= Int(nowDateStr)! {
-            if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
-                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: tableName)
-            } else {
-                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: tableName)
-            }
+        // 倒叙查找到标识符的范围
+        let identifierRange = (operatingButton.id)!.range(of: "#", options: .backwards, range: fullRnage, locale: nil)
+        
+        let index = (operatingButton.id)!.index(identifierRange!.lowerBound, offsetBy: 1)
+        
+        let title = (operatingButton.id)!.substring(from: index)
+        
+        if Int(title)! <= Int(nowDateStr)! {
+//            if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
+//                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: regularDataBase)
+//            } else {
+//                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: regularDataBase)
+//            }
             
-            self.update(operatingButton, isChangeStatus: true)
+//            self.update(operatingButton, isChangeStatus: true)
         } else {
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             shake(button: (weekTitleView.selectedWeek)!)
             operatingButton.bgStatus = .Base
+            self.statusCache["\((operatingButton.id)!)"] = "Base"
         }
     }
     
-    /// 左右晃动动画
+    /// "左右摇晃"动画
     fileprivate func shake(button: UIButton) {
         let shakeAnimation = CAKeyframeAnimation()
         shakeAnimation.keyPath = "transform.translation.x"
         // 偏移量
-        let offset = 3
+        let offset = 2.5
         // 过程
         shakeAnimation.values = [-offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0, -offset, 0, offset, 0]
         // 动画时间
@@ -315,6 +411,30 @@ extension CalendarViewController: CAAnimationDelegate {
         button.layer.add(shakeAnimation, forKey: "shake")
     }
     
+    /// 滚动到现在的月份
+    fileprivate func scrollToThisMonth(animated: Bool = false) {
+        // 今天是几月份
+        let month = Calendar.current.component(.month, from: Date())
+        
+        var indexPath: IndexPath?
+
+        if month == 1 {
+            // 一月份时, 不进行偏移
+            indexPath = IndexPath(row: 0, section: 0)
+        } else if month == 12 {
+            // 12 月时, 偏移到上一个月初
+            indexPath = IndexPath(row: 0, section: month - 1)
+        } else {
+            // 上个月有几天
+            let previousDayOfMonth = dayOfMonth[month - 2]
+            // 偏移到上个月末
+            indexPath = IndexPath(row: previousDayOfMonth - 1, section: month - 2)
+        }
+        
+        collectionView?.scrollToItem(at: indexPath!, at: .top, animated: animated)
+    }
+    
+    
 }
 
 // MARK: - 备注界面相关
@@ -324,9 +444,10 @@ extension CalendarViewController {
             self.setupBlur()
             self.chooseBtn = button
             let remarksVC = RemarksController()
-            
+
             // 随时改变标题显示
-            let dateTuples = DateTool.shared.filterMonthAndDay(dateStr: (button.id)!, yearStr: "\(self.year)")
+            /*
+             let dateTuples = DateTool.shared.filterMonthAndDay(dateStr: (button.id)!, yearStr: "\(self.year)")
             let monthStr = dateTuples.month
             let dayStr = dateTuples.day
             
@@ -336,7 +457,7 @@ extension CalendarViewController {
                 let englishMonths = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
                 
                 self.title = "\(englishMonths[Int(monthStr)! - 1]) \(dayStr)"
-            }
+            } */
             
             if button.dataStr != nil {
                 remarksVC.textView.text = button.dataStr!
@@ -361,17 +482,22 @@ extension CalendarViewController {
             }
             
             remarksVC.pinTapHandler = { (_, text) in
+                self.dismiss(animated: true, completion: nil)
+                
                 UIView.animate(withDuration: 0.3, animations: { 
                     self.effectView?.alpha = 0
                 }, completion: { (_) in
                     self.navigationController?.navigationBar.isHidden = false
                 })
-
+                
+                // 添加到缓存
+                self.dataStrCache["\((self.chooseBtn?.id)!)"] = text!
+                
                 self.chooseBtn?.dataStr = text!
                 
-                _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
+                // _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
                 
-                self.update(self.chooseBtn!, isChangeStatus: false)
+                // self.update(self.chooseBtn!, isChangeStatus: false)
                 
                 if let text = text, let chooseBtn = self.chooseBtn {
                     self.opinionIndicator(button: chooseBtn, text: text)
@@ -411,10 +537,28 @@ extension CalendarViewController {
     
 }
 
+// MARK:- 通知相关
+extension CalendarViewController {
+    
+    fileprivate func setupNotification() {
+        NotificationCenter.default.addObserver(self, selector: #selector(updateTodayIndicator), name: timeChangeNotification, object: nil)
+    }
+    
+    // 更新"今天指示器"
+    @objc fileprivate func updateTodayIndicator() {
+        // 今天的日期 ID
+        let date = DateTool.shared.getCompactDate(dateFormat: "MMdd")
+        self.todayStr = "\(date)"
+                
+        collectionView?.reloadData()
+    }
+
+}
+
 // MARK:- 数据加载
 extension CalendarViewController {
     /// 添加新数据
-    fileprivate func loadData() {
+    fileprivate func loadData(title: String) {
         self.models = [[StatusModel]]()
         let days = DateTool.shared.getDayOfMonth(year: "\(year)")
         var monthNum = 1
@@ -422,30 +566,30 @@ extension CalendarViewController {
         for day in days {
             var monthStatus = [StatusModel]()
             for i in 1...day {
-                var dict = [String: Any]()
+                var dict = [String: String]()
 
                 if monthNum.description.characters.count == 1 {
                     if i.description.characters.count == 1 {
-                        id = "\(year)0\(monthNum)0\(i)"
+                        id = "\(title)#\(year)0\(monthNum)0\(i)"
                     } else {
-                        id = "\(year)0\(monthNum)\(i)"
+                        id = "\(title)#\(year)0\(monthNum)\(i)"
                     }
                 } else {
                     if i.description.characters.count == 1 {
-                        id = "\(year)\(monthNum)0\(i)"
+                        id = "\(title)#\(year)\(monthNum)0\(i)"
                     } else {
-                        id = "\(year)\(monthNum)\(i)"
+                        id = "\(title)#\(year)\(monthNum)\(i)"
                     }
                 }
                 
                 dict["id"] = id
-
-                let dataArray = SQLite.shared.query(inTable: tableName, id: id)
-                if dataArray?.count != 0 {
+                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: id)
+                
+                if dataArray != nil, dataArray?.count != 0 {
                     let savedID = dataArray?[0] as! String
                     let savedStatus = dataArray?[1] as! String
                     let savedRemark = dataArray?[2] as! String
-                    
+
                     if savedID == id {
                         dict["status"] = savedStatus
                         dict["dataStr"] = savedRemark
@@ -455,7 +599,7 @@ extension CalendarViewController {
                     dict["status"] = "Base"
                     dict["dataStr"] = ""
                     dict["dayStr"] = "\(i)"
-                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: tableName)
+                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
                 }
                 
                 let status = StatusModel(dict: dict)
@@ -501,28 +645,15 @@ extension CalendarViewController {
     
 }
 
-// MARK:- 手势相关
-extension CalendarViewController: UIGestureRecognizerDelegate {
-    /// 点击菜单备注弹出窗口
+// MARK:- 蒙版
+extension CalendarViewController {
+    /// 点击菜单备注弹出窗口背景添加蒙版
     fileprivate func setupBlur() {
         let effect = UIBlurEffect(style: .dark)
         effectView = UIVisualEffectView(effect: effect)
         effectView?.frame = UIScreen.main.bounds
         effectView?.alpha = 0
         view.addSubview(effectView!)
-        setupTapGesture(effectView!)
-    }
-    
-    fileprivate func setupTapGesture(_ effectView: UIVisualEffectView) {
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(tap(tap:)))
-        tapGesture.delegate = self
-        effectView.addGestureRecognizer(tapGesture)
-    }
-    
-    @objc fileprivate func tap(tap: UITapGestureRecognizer) {
-        UIView.animate(withDuration: 0.3) {
-            self.effectView?.alpha = 0
-        }
     }
     
 }
