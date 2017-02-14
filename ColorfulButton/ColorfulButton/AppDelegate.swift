@@ -9,7 +9,7 @@
 import UIKit
 
 /// SQL 表名
-let regularDataBase = "t_buttons"
+let regularDataBase = "t_regular"
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -21,7 +21,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // Override point for customization after application launch.
         
         SQLite.shared.isPrint = false
-        _ = SQLite.shared.openDB(pathName: "status", tableName: regularDataBase)
+        _ = SQLite.shared.openDB(pathName: "regularData", tableName: regularDataBase)
         
         UINavigationBar.appearance().tintColor = appColor
         

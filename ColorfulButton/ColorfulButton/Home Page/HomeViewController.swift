@@ -20,10 +20,14 @@ class HomeViewController: UIViewController {
     var effectView: UIVisualEffectView?
     
     /// 规律数据库
-    var regularDatabase = [Any]()
+    var regularData = [Any]()
     
     /// 标题数组
     var titles = [String]()
+    
+    var statusCache = [String: Any]()
+    var dataStrCache = [String: Any]()
+    let year = 2017
     
     // MARK:- 系统函数
     override func viewDidLoad() {
@@ -85,7 +89,6 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         let detailController = CalendarViewController()
         
         detailController.title = titles[indexPath.row]
-        detailController.identifier = titles[indexPath.row]
         
         navigationController?.pushViewController(detailController, animated: true)
     }
@@ -173,9 +176,6 @@ extension HomeViewController: CAAnimationDelegate {
             } else {
                 // 添加数据
                 self.loadTitleData(title: text!)
-                //let oneYearData = self.createRegularData(title: text!)
-                //self.regularDatabase.insert(oneYearData, at: 0)
-                
                 
                 self.dismiss(animated: true, completion: nil)
                 UIView.animate(withDuration: 0.3, animations: {
@@ -184,8 +184,6 @@ extension HomeViewController: CAAnimationDelegate {
                     self.navigationController?.navigationBar.isHidden = false
                 })
             }
-            
-            
         }
         
     }
@@ -233,66 +231,66 @@ extension HomeViewController: CAAnimationDelegate {
 extension HomeViewController {
     /// 创建新数据
     /// - parameter title: 标题
-    fileprivate func createRegularData(title: String) -> [[StatusModel]] {
-        // 一年的所有数据
-        var oneYearsDataModels = [[StatusModel]]()
-        
-        // 当前的年
-        let year = "\(Calendar.current.component(.year, from: Date()))"
-        
-        // 一年中每个月有几天数组
-        let daysOfMonth = DateTool.shared.getDayOfMonth(year: "\(year)")
-        
-        var monthNum = 1
-        var id = ""
-        for days in daysOfMonth {
-            var monthStatus = [StatusModel]()
-            for i in 1...days {
-                var dict = [String: Any]()
-                
-                if monthNum.description.characters.count == 1 {
-                    if i.description.characters.count == 1 {
-                        id = "\(title)#\(year)0\(monthNum)0\(i)"
-                    } else {
-                        id = "\(title)#\(year)0\(monthNum)\(i)"
-                    }
-                } else {
-                    if i.description.characters.count == 1 {
-                        id = "\(title)#\(year)\(monthNum)0\(i)"
-                    } else {
-                        id = "\(title)#\(year)\(monthNum)\(i)"
-                    }
-                }
-                
-                dict["id"] = id
-                
-                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: id)
-                if dataArray != nil, dataArray?.count != 0 {
-                    let savedID = dataArray?[0] as! String
-                    let savedStatus = dataArray?[1] as! String
-                    let savedRemark = dataArray?[2] as! String
-                    
-                    if savedID == id {
-                        dict["status"] = savedStatus
-                        dict["dataStr"] = savedRemark
-                        dict["dayStr"] = "\(i)"
-                    }
-                } else {
-                    dict["status"] = "Base"
-                    dict["dataStr"] = ""
-                    dict["dayStr"] = "\(i)"
-                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
-                }
-                
-                let status = StatusModel(dict: dict)
-                monthStatus.append(status)
-            }
-            monthNum += 1
-            oneYearsDataModels.append(monthStatus)
-        }
-        
-        return oneYearsDataModels
-    }
+    //fileprivate func createRegularData(title: String) -> [[StatusModel]] {
+//        // 一年的所有数据
+//        var oneYearsDataModels = [[StatusModel]]()
+//        
+//        // 当前的年
+//        let year = "\(Calendar.current.component(.year, from: Date()))"
+//        
+//        // 一年中每个月有几天数组
+//        let daysOfMonth = DateTool.shared.getDayOfMonth(year: "\(year)")
+//        
+//        var monthNum = 1
+//        var id = ""
+//        for days in daysOfMonth {
+//            var monthStatus = [StatusModel]()
+//            for i in 1...days {
+//                var dict = [String: Any]()
+//                
+//                if monthNum.description.characters.count == 1 {
+//                    if i.description.characters.count == 1 {
+//                        id = "\(title)#\(year)0\(monthNum)0\(i)"
+//                    } else {
+//                        id = "\(title)#\(year)0\(monthNum)\(i)"
+//                    }
+//                } else {
+//                    if i.description.characters.count == 1 {
+//                        id = "\(title)#\(year)\(monthNum)0\(i)"
+//                    } else {
+//                        id = "\(title)#\(year)\(monthNum)\(i)"
+//                    }
+//                }
+//                
+//                dict["id"] = id
+//                
+//                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: id)
+//                if dataArray != nil, dataArray?.count != 0 {
+//                    let savedID = dataArray?[0] as! String
+//                    let savedStatus = dataArray?[1] as! String
+//                    let savedRemark = dataArray?[2] as! String
+//                    
+//                    if savedID == id {
+//                        dict["status"] = savedStatus
+//                        dict["dataStr"] = savedRemark
+//                        dict["dayStr"] = "\(i)"
+//                    }
+//                } else {
+//                    dict["status"] = "Base"
+//                    dict["dataStr"] = ""
+//                    dict["dayStr"] = "\(i)"
+//                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
+//                }
+//                
+//                let status = StatusModel(dict: dict)
+//                monthStatus.append(status)
+//            }
+//            monthNum += 1
+//            oneYearsDataModels.append(monthStatus)
+//        }
+//        
+//        return oneYearsDataModels
+//    }
     
     /// 加载标题数据
     fileprivate func loadTitleData(title: String? = nil) {
@@ -309,10 +307,9 @@ extension HomeViewController {
         }
         tableView?.reloadData()
     }
-    
-    
-    
+ 
 }
+
 
 
 

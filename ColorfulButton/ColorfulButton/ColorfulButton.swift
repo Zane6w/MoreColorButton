@@ -44,6 +44,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     typealias TapHandler = (ColorfulButton) -> Void
     /// 按钮点击事件
     var buttonTapHandler: TapHandler?
+    var longPressHandler: TapHandler?
     var remarksTapHandler: TapHandler?
     
     /// "备注"标题
@@ -203,6 +204,7 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
     @objc fileprivate func longPress(longPress: UILongPressGestureRecognizer) {
         // 长按手势按下和抬起会调用两次
         if longPress.state == .began {
+            
             self.becomeFirstResponder()
 
             // 菜单显示位置
@@ -210,8 +212,13 @@ class ColorfulButton: UIButton, UIGestureRecognizerDelegate {
             
             reloadMenu()
             
-            // 显示菜单
-            menu.setMenuVisible(true, animated: true)
+            // 显示菜单(有外界决定)
+            // menu.setMenuVisible(true, animated: true)
+            
+            // 传递出去点击事件和参数
+            if longPressHandler != nil {
+                longPressHandler!(self)
+            }
         }
     }
     

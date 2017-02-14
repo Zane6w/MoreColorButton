@@ -60,7 +60,8 @@ class SQLite: NSObject {
     /// 创建表
     fileprivate func createTable() -> Bool {
         db?.open()
-        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT,title TEXT);"
+        // "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status TEXT,remark TEXT,title TEXT);"
+        let sql = "CREATE TABLE IF NOT EXISTS \(tableName!) (id INTEGER PRIMARY KEY AUTOINCREMENT,btnID TEXT,status BLOB,remarks BLOB,title TEXT);"
         
         if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
             remind("创建表成功")
@@ -77,18 +78,22 @@ class SQLite: NSObject {
     /// 插入数据
     /// - parameter objc: 传入非自定义类型
     /// - parameter inTable: 需要操作的表名
-    func insert(id: String, status: String, remark: String, inTable: String? = nil) -> Bool {
+    func insert(id: String, statusDict: Any, remarksDict: Any, inTable: String? = nil) -> Bool {
         db?.open()
         db?.beginTransaction()
         
         var sql: String?
         if inTable == nil {
-            sql = "INSERT INTO \(tableName!) (btnID,status,remark,title) VALUES (?,?,?,?);"
+            sql = "INSERT INTO \(tableName!) (btnID,status,remarks,title) VALUES (?,?,?,?);"
         } else {
-            sql = "INSERT INTO \(inTable!) (btnID,status,remark,title) VALUES (?,?,?,?);"
+            sql = "INSERT INTO \(inTable!) (btnID,status,remarks,title) VALUES (?,?,?,?);"
         }
         let title = "nil"
-        if (db?.executeUpdate(sql, withArgumentsIn: [id, status, remark, title]))! {
+        
+        let status = toJson(objc: statusDict)
+        let remarks = toJson(objc: remarksDict)
+        
+        if (db?.executeUpdate(sql, withArgumentsIn: [id, status!, remarks!, title]))! {
             remind("插入数据成功")
             db?.commit()
             db?.close()
@@ -131,9 +136,9 @@ class SQLite: NSObject {
     func queryAll(inTable: String? = nil) -> [Any]? {
         var sql: String?
         if inTable == nil {
-            sql = "SELECT btnID,status,remark FROM \(tableName!);"
+            sql = "SELECT btnID,status,remarks FROM \(tableName!);"
         } else {
-            sql = "SELECT btnID,status,remark FROM \(inTable!);"
+            sql = "SELECT btnID,status,remarks FROM \(inTable!);"
         }
         
         return packQuery(sql: sql!)
@@ -156,9 +161,9 @@ class SQLite: NSObject {
     func query(inTable: String? = nil, id: String) -> [Any]? {
         var sql: String?
         if inTable == nil {
-            sql = "SELECT btnID,status,remark FROM \(tableName!) WHERE btnID = '\(id)';"
+            sql = "SELECT btnID,status,remarks FROM \(tableName!) WHERE btnID = '\(id)';"
         } else {
-            sql = "SELECT btnID,status,remark FROM \(inTable!) WHERE btnID = '\(id)';"
+            sql = "SELECT btnID,status,remarks FROM \(inTable!) WHERE btnID = '\(id)';"
         }
         
         return packQuery(sql: sql!, isFull: true)
@@ -180,13 +185,16 @@ class SQLite: NSObject {
         while set!.next() {
             let id = set?.object(forColumnName: "btnID")
             let status = set?.object(forColumnName: "status")
-            let remark = set?.object(forColumnName: "remark")
+            let remark = set?.object(forColumnName: "remarks")
             let title = set?.object(forColumnName: "title")
-            if let id = id, let status = status, let remark = remark, let title = title {
+            if let id = id, let status = status, let remarks = remark, let title = title {
                 if isFull {
+                    let statusDict = jsonToAny(json: status as! String)
+                    let remarksDict = jsonToAny(json: remarks as! String)
+                    
                     tempArray.append(id)
-                    tempArray.append(status)
-                    tempArray.append(remark)
+                    tempArray.append(statusDict!)
+                    tempArray.append(remarksDict!)
                 } else {
                     if title as! String != "nil" {
                         tempArray.append(title)
@@ -204,20 +212,24 @@ class SQLite: NSObject {
     /// 根据ID更新某个数据
     /// - parameter newValue: 传入非自定义类型
     /// - parameter inTable: 需要操作的表名
-    func update(id: String, status: String, remark: String, inTable: String? = nil) -> Bool {
+    func update(id: String, statusDict: Any, remarksDict: Any, inTable: String? = nil) -> Bool {
         db?.open()
         db?.beginTransaction()
+        
+        let status = toJson(objc: statusDict)
+        let remarks = toJson(objc: remarksDict)
+        
         // e.g.: 更新 ID = 6 的数据
         // "UPDATE \(tableName) SET js = '\(js!)'; WHERE ID = 6"
         // "UPDATE \(tableName!) SET js = '\(js!)' WHERE btnID = 'zz123';"
         var sql: String?
         if inTable == nil {
-            sql = "UPDATE \(tableName!) SET status = '\(status)', remark = '\(remark)' WHERE btnID = '\(id)';"
+            sql = "UPDATE \(tableName!) SET status = ?, remarks = ? WHERE btnID = ?;"
         } else {
-            sql = "UPDATE \(inTable!) SET status = '\(status)', remark = '\(remark)' WHERE btnID = '\(id)';"
+            sql = "UPDATE \(inTable!) SET status = ?, remarks = ? WHERE btnID = ?;"
         }
         
-        if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
+        if (db?.executeUpdate(sql, withArgumentsIn: [status!, remarks!, id]))! {
             remind("修改成功")
             db?.commit()
             db?.close()
@@ -295,6 +307,37 @@ extension SQLite {
         }
     }
 
+}
+
+// MARK:- JSON、ANY 转换
+extension SQLite {
+    /// **Any** 转换为 **JSON** 类型
+    /// - parameter objc: 传入非自定义类型
+    func toJson(objc: Any) -> String? {
+        let data = try? JSONSerialization.data(withJSONObject: objc, options: .prettyPrinted)
+        if let data = data {
+            return String(data: data, encoding: .utf8)
+        } else {
+            return nil
+        }
+    }
+    
+    /// **JSON** 转换为 **Any** 类型
+    /// - parameter json: String 类型数据
+    func jsonToAny(json: String) -> Any? {
+        let data = json.data(using: .utf8)
+        if let data = data {
+            let anyObjc = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
+            if let anyObjc = anyObjc {
+                return anyObjc
+            } else {
+                return nil
+            }
+        } else {
+            return nil
+        }
+    }
+    
 }
 
 // MARK:- 自定义 print 打印

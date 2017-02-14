@@ -43,7 +43,12 @@ class CalendarViewController: UIViewController {
     var naviTitle = ""
     
     /// 年份（可根据年份前缀来赋值按钮 ID，可用来查询旧数据）
-    let year = 2017
+//    let year = 2017
+    
+    /// ID
+    var regularID: String?
+    /// 今年
+    let thisYear = Calendar.current.component(.year, from: Date())
     
     let dayOfMonth = DateTool.shared.getDayOfMonth()
     let firstdayOfWeek = DateTool.shared.getFirstMonthDayOfWeek()
@@ -64,7 +69,17 @@ class CalendarViewController: UIViewController {
     // MARK:- 系统函数
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
+        let dataArray = SQLite.shared.query(inTable: regularDataBase, id: "\((self.title)!)#\(thisYear)")
+        
+        if let dataArray = dataArray, dataArray.count != 0 {
+            let statusDict = dataArray[1] as! [String: Any]
+            let remarksDict = dataArray[2] as! [String: Any]
+            
+            self.statusCache = statusDict
+            self.dataStrCache = remarksDict
+        }
+        
         // 今天的日期 ID
         let date = DateTool.shared.getCompactDate(dateFormat: "MMdd")
         let todayID = "\(date)"
@@ -112,10 +127,6 @@ class CalendarViewController: UIViewController {
     
     deinit {
         NotificationCenter.default.removeObserver(self)
-    }
-    
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        
     }
 
     // MARK:- 界面设置
@@ -260,10 +271,16 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             // 设置按钮状态颜色
             self.statusCache["\((operatingButton.id)!)"] = operatingButton.bgStatus.rawValue
             
+            
             /* 判断点击的日期是否是未来日期
              未来日期不可选择, 不会保存, 同时震动提示
              */
-            self.opinionDate(operatingButton)
+            self.opinionDate(operatingButton, isLongPress: false)
+        }
+        
+        // 按钮长按手势事件
+        cell.planButton?.longPressHandler = { (operatingButton) in
+            self.opinionDate(operatingButton, isLongPress: true)
         }
         
         // 设置按钮日期文字
@@ -285,7 +302,7 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             rowStr = "\(row + 1)"
         }
 
-        cell.planButton?.id = "\(naviTitle)#\(year)\(sectionStr)\(rowStr)"
+        cell.planButton?.id = "\((self.title)!)#\(thisYear)\(sectionStr)\(rowStr)"
         
         if "\(sectionStr)\(rowStr)" == self.todayStr {
             cell.todayIndicator.isHidden = false
@@ -364,7 +381,8 @@ extension CalendarViewController: CAAnimationDelegate {
     /// - 判断点击的日期是否是未来日期
     /// - 未来日期不可选择，不会保存，同时震动提示。
     /// - parameter operatingButton: 点击的按钮
-    fileprivate func opinionDate(_ operatingButton: ColorfulButton) {
+    /// - parameter isLongPress: 是否为长按操作
+    fileprivate func opinionDate(_ operatingButton: ColorfulButton, isLongPress: Bool) {
         let nowDateStr = DateTool.shared.getCompactDate()
         // ID 的范围
         let fullRnage = Range(uncheckedBounds: (lower: (operatingButton.id)!.startIndex, upper: (operatingButton.id)!.endIndex))
@@ -377,18 +395,27 @@ extension CalendarViewController: CAAnimationDelegate {
         let title = (operatingButton.id)!.substring(from: index)
         
         if Int(title)! <= Int(nowDateStr)! {
-//            if operatingButton.dataStr != nil || operatingButton.dataStr != "" {
-//                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "\(operatingButton.dataStr!)", inTable: regularDataBase)
-//            } else {
-//                _ = SQLite.shared.update(id: operatingButton.id!, status: "\(operatingButton.bgStatus)", remark: "", inTable: regularDataBase)
-//            }
+            if isLongPress {
+                 operatingButton.menu.setMenuVisible(true, animated: true)
+            }
             
-//            self.update(operatingButton, isChangeStatus: true)
+            let dataArray = SQLite.shared.query(inTable: regularDataBase, id: "\((self.title)!)#\(self.thisYear)")
+            if let dataArray = dataArray, dataArray.count != 0 {
+                let statusDict = dataArray[1] as! [String: Any]
+                if statusDict["\((operatingButton.id)!)"] == nil {
+                    _ = SQLite.shared.insert(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+                } else {
+                    _ = SQLite.shared.update(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+                }
+            } else {
+                _ = SQLite.shared.insert(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+            }
         } else {
             AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
             shake(button: (weekTitleView.selectedWeek)!)
             operatingButton.bgStatus = .Base
             self.statusCache["\((operatingButton.id)!)"] = "Base"
+            operatingButton.menu.setMenuVisible(false, animated: true)
         }
     }
     
@@ -433,7 +460,6 @@ extension CalendarViewController: CAAnimationDelegate {
         
         collectionView?.scrollToItem(at: indexPath!, at: .top, animated: animated)
     }
-    
     
 }
 
@@ -494,6 +520,18 @@ extension CalendarViewController {
                 self.dataStrCache["\((self.chooseBtn?.id)!)"] = text!
                 
                 self.chooseBtn?.dataStr = text!
+                
+                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: "\((self.title)!)#\(self.thisYear)")
+                if let dataArray = dataArray, dataArray.count != 0 {
+                    let remarksDict = dataArray[2] as! [String: Any]
+                    if remarksDict["\((self.chooseBtn?.id)!)"] == nil {
+                        _ = SQLite.shared.insert(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+                    } else {
+                        _ = SQLite.shared.update(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+                    }
+                } else {
+                    _ = SQLite.shared.insert(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
+                }
                 
                 // _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
                 
@@ -558,6 +596,7 @@ extension CalendarViewController {
 // MARK:- 数据加载
 extension CalendarViewController {
     /// 添加新数据
+    /*
     fileprivate func loadData(title: String) {
         self.models = [[StatusModel]]()
         let days = DateTool.shared.getDayOfMonth(year: "\(year)")
@@ -599,7 +638,7 @@ extension CalendarViewController {
                     dict["status"] = "Base"
                     dict["dataStr"] = ""
                     dict["dayStr"] = "\(i)"
-                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
+//                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
                 }
                 
                 let status = StatusModel(dict: dict)
@@ -608,7 +647,7 @@ extension CalendarViewController {
             monthNum += 1
             self.models?.append(monthStatus)
         }
-    }
+    } */
     
     /// 更新数据
     /// - parameter operatingButton: 正在操作的按钮
@@ -677,6 +716,7 @@ class CollectionReusableHeaderView: UICollectionReusableView {
         title.textColor = appColor
         
         addSubview(title)
+        
     }
     
     required init?(coder aDecoder: NSCoder) {
