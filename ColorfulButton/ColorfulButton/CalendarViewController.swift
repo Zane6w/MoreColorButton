@@ -43,8 +43,6 @@ class CalendarViewController: UIViewController {
     var naviTitle = ""
     
     /// 年份（可根据年份前缀来赋值按钮 ID，可用来查询旧数据）
-//    let year = 2017
-    
     /// ID
     var regularID: String?
     /// 今年
@@ -52,14 +50,6 @@ class CalendarViewController: UIViewController {
     
     let dayOfMonth = DateTool.shared.getDayOfMonth()
     let firstdayOfWeek = DateTool.shared.getFirstMonthDayOfWeek()
-    
-    fileprivate var models: [[StatusModel]]?
-    
-    var identifier: String? {
-        didSet {
-//            loadData(title: identifier!)
-        }
-    }
     
     var statusCache = [String: Any]()
     var dataStrCache = [String: Any]()
@@ -271,7 +261,6 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             // 设置按钮状态颜色
             self.statusCache["\((operatingButton.id)!)"] = operatingButton.bgStatus.rawValue
             
-            
             /* 判断点击的日期是否是未来日期
              未来日期不可选择, 不会保存, 同时震动提示
              */
@@ -332,8 +321,6 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
             opinionIndicator(button: (cell.planButton)!, text: (cell.planButton?.dataStr)!)
         }
         /* ---------- */
-        
-//        cell.model = self.models?[indexPath.section][row]
         
         DispatchQueue.main.async {
             self.setupInterface(btn: cell.planButton!)
@@ -471,20 +458,6 @@ extension CalendarViewController {
             self.chooseBtn = button
             let remarksVC = RemarksController()
 
-            // 随时改变标题显示
-            /*
-             let dateTuples = DateTool.shared.filterMonthAndDay(dateStr: (button.id)!, yearStr: "\(self.year)")
-            let monthStr = dateTuples.month
-            let dayStr = dateTuples.day
-            
-            if isChineseLanguage {
-                self.title = "\(monthStr)月\(dayStr)日"
-            } else {
-                let englishMonths = ["Jan.", "Feb.", "Mar.", "Apr.", "May.", "Jun.", "Jul.", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."]
-                
-                self.title = "\(englishMonths[Int(monthStr)! - 1]) \(dayStr)"
-            } */
-            
             if button.dataStr != nil {
                 remarksVC.textView.text = button.dataStr!
             }
@@ -532,10 +505,6 @@ extension CalendarViewController {
                 } else {
                     _ = SQLite.shared.insert(id: "\((self.title)!)#\(self.thisYear)", statusDict: self.statusCache, remarksDict: self.dataStrCache, inTable: regularDataBase)
                 }
-                
-                // _ = SQLite.shared.update(id: (self.chooseBtn?.id)!, status: "\((self.chooseBtn?.bgStatus)!)", remark: text!, inTable: "t_buttons")
-                
-                // self.update(self.chooseBtn!, isChangeStatus: false)
                 
                 if let text = text, let chooseBtn = self.chooseBtn {
                     self.opinionIndicator(button: chooseBtn, text: text)
@@ -595,92 +564,6 @@ extension CalendarViewController {
 
 // MARK:- 数据加载
 extension CalendarViewController {
-    /// 添加新数据
-    /*
-    fileprivate func loadData(title: String) {
-        self.models = [[StatusModel]]()
-        let days = DateTool.shared.getDayOfMonth(year: "\(year)")
-        var monthNum = 1
-        var id = ""
-        for day in days {
-            var monthStatus = [StatusModel]()
-            for i in 1...day {
-                var dict = [String: String]()
-
-                if monthNum.description.characters.count == 1 {
-                    if i.description.characters.count == 1 {
-                        id = "\(title)#\(year)0\(monthNum)0\(i)"
-                    } else {
-                        id = "\(title)#\(year)0\(monthNum)\(i)"
-                    }
-                } else {
-                    if i.description.characters.count == 1 {
-                        id = "\(title)#\(year)\(monthNum)0\(i)"
-                    } else {
-                        id = "\(title)#\(year)\(monthNum)\(i)"
-                    }
-                }
-                
-                dict["id"] = id
-                let dataArray = SQLite.shared.query(inTable: regularDataBase, id: id)
-                
-                if dataArray != nil, dataArray?.count != 0 {
-                    let savedID = dataArray?[0] as! String
-                    let savedStatus = dataArray?[1] as! String
-                    let savedRemark = dataArray?[2] as! String
-
-                    if savedID == id {
-                        dict["status"] = savedStatus
-                        dict["dataStr"] = savedRemark
-                        dict["dayStr"] = "\(i)"
-                    }
-                } else {
-                    dict["status"] = "Base"
-                    dict["dataStr"] = ""
-                    dict["dayStr"] = "\(i)"
-//                    _ = SQLite.shared.insert(id: id, status: "Base", remark: "", inTable: regularDataBase)
-                }
-                
-                let status = StatusModel(dict: dict)
-                monthStatus.append(status)
-            }
-            monthNum += 1
-            self.models?.append(monthStatus)
-        }
-    } */
-    
-    /// 更新数据
-    /// - parameter operatingButton: 正在操作的按钮
-    /// - parameter isChangeStatus: 是否更改按钮状态
-    fileprivate func update(_ operatingButton: ColorfulButton, isChangeStatus: Bool) {
-        let index = self.models?.index(where: { (model) -> Bool in
-            var isSuccess: Bool = false
-            for single in model {
-                if single.id! == operatingButton.id! {
-                    isSuccess = true
-                }
-            }
-            return isSuccess
-        })
-        
-        let singleModel = self.models?[index!]
-        
-        // 是否需要修改按钮状态
-        if isChangeStatus {
-            for model in singleModel! {
-                if model.id! == operatingButton.id! {
-                    model.status = "\(operatingButton.bgStatus)"
-                    model.dataStr = operatingButton.dataStr!
-                }
-            }
-        } else {
-            for model in singleModel! {
-                if model.id! == operatingButton.id! {
-                    model.dataStr = operatingButton.dataStr!
-                }
-            }
-        }
-    }
     
 }
 

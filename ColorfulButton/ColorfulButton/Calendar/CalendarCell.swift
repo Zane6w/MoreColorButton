@@ -18,42 +18,6 @@ class CalendarCell: UICollectionViewCell {
     // 今天日期标识指示器
     let todayIndicator = UIView()
     
-    /// 按钮模型属性
-    var model: StatusModel? {
-        didSet {
-            self.planButton?.becomeFirstResponder()
-            
-            self.planButton?.id = (self.model?.id)!
-            //self.planButton?.setTitle((self.model?.dayStr)!, for: .normal)
-            self.planButton?.bgStatus = StatusType(rawValue: (self.model?.status)!)!
-            self.planButton?.dataStr = (self.model?.dataStr)!
-            
-            if self.model?.dataStr != "" {
-                self.planButton?.indicator.isHidden = false
-            } else {
-                self.planButton?.indicator.isHidden = true
-            }
-            
-            self.opinionIndicator(button: self.planButton!, text: (self.planButton?.dataStr)!)
-            
-            self.planButton?.resignFirstResponder()
-            
-            DispatchQueue.main.async {
-                let nowDateStr = DateTool.shared.getCompactDate()
-                
-                if (self.planButton?.id)! == nowDateStr {
-                    self.todayIndicator.isHidden = false
-                } else {
-                    self.todayIndicator.isHidden = true
-                }
-            }
-            
-//            if todayIndicatorTimer == nil {
-//                todayIndicatorTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateTodayIndicator), userInfo: nil, repeats: true)
-//            }
-        }
-    }
-    
     // MARK:- 系统函数
     override init(frame: CGRect) {
         super.init(frame: frame)
