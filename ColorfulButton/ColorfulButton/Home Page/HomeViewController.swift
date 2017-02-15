@@ -19,15 +19,8 @@ class HomeViewController: UIViewController {
     
     var effectView: UIVisualEffectView?
     
-    /// 规律数据库
-    var regularData = [Any]()
-    
     /// 标题数组
     var titles = [String]()
-    
-    var statusCache = [String: Any]()
-    var dataStrCache = [String: Any]()
-    let year = 2017
     
     // MARK:- 系统函数
     override func viewDidLoad() {
@@ -37,7 +30,8 @@ class HomeViewController: UIViewController {
         setupWeekTitleView()
         
         loadTitleData()
-    
+        
+        _ = opinionEditStatus()
     }
 
     override func didReceiveMemoryWarning() {
@@ -53,6 +47,10 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         tableView = UITableView(frame: self.view.bounds, style: .plain)
         tableView?.dataSource = self
         tableView?.delegate = self
+        tableView?.separatorInset = .zero
+        tableView?.separatorColor = #colorLiteral(red: 0.8862745098, green: 0.8862745098, blue: 0.8941176471, alpha: 1)
+    
+        tableView?.tableFooterView = UIView()
         
         self.view.addSubview(tableView!)
         
@@ -67,19 +65,17 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         return titles.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 70
-    }
-    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: contentIdentifier, for: indexPath) as! ContentCell
-
-        if titles.count != 0 {
-            cell.identifyLabel.text = titles[indexPath.row]
-        }
+        
+        cell.titleStr = titles[indexPath.row]
+        
+        cell.controller = self
         
         cell.selectionStyle = .none
+        
+        tableView.rowHeight = cell.cellHeight
         
         return cell
     }
@@ -91,6 +87,44 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
         detailController.title = titles[indexPath.row]
         
         navigationController?.pushViewController(detailController, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+        if tableView.isEditing {
+            return .delete
+        } else {
+            return .none
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let thisYear = Calendar.current.component(.year, from: Date())
+
+            _ = SQLite.shared.delete(id: "\(titles[indexPath.row])#\(thisYear)", inTable: regularDataBase)
+            _ = SQLite.shared.delete(title: titles[indexPath.row], inTable: regularDataBase)
+            
+            titles.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .fade)
+            let isEnabled = opinionEditStatus()
+            editButtonChange(isEnabled: isEnabled)
+            
+            if titles.count == 0 {
+                tableView.setEditing(false, animated: true)
+            }
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+        if isChineseLanguage {
+            return "删除"
+        } else {
+            return "Delete"
+        }
     }
     
 }
@@ -120,7 +154,11 @@ extension HomeViewController: CAAnimationDelegate {
         // -----------------
         
         let editButton = UIButton(type: .system)
-        editButton.setTitle("Edit", for: .normal)
+        if isChineseLanguage {
+            editButton.setTitle("编辑", for: .normal)
+        } else {
+            editButton.setTitle("Edit", for: .normal)
+        }
         editButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
         editButton.frame = CGRect(origin: .zero, size: CGSize(width: UIScreen.main.bounds.width / 7, height: (navigationController?.navigationBar.bounds.height)!))
         editButton.tintColor = appColor
@@ -141,10 +179,13 @@ extension HomeViewController: CAAnimationDelegate {
         
         navigationItem.rightBarButtonItem = addNewRegularItem
         
+        _ = opinionEditStatus()
     }
     
     @objc fileprivate func editRegular() {
-        print("edit")
+        tableView?.setEditing(!(tableView?.isEditing)!, animated: true)
+        
+        editButtonChange(isEnabled: true)
     }
     
     @objc fileprivate func addNewRegular() {
@@ -176,16 +217,60 @@ extension HomeViewController: CAAnimationDelegate {
             } else {
                 // 添加数据
                 self.loadTitleData(title: text!)
-                
+
                 self.dismiss(animated: true, completion: nil)
                 UIView.animate(withDuration: 0.3, animations: {
                     self.effectView?.alpha = 0
                 }, completion: { (_) in
                     self.navigationController?.navigationBar.isHidden = false
+                    _ = self.opinionEditStatus()
                 })
             }
         }
         
+    }
+    
+    /// 判断左上角编辑按钮是否可用
+    fileprivate func opinionEditStatus() -> Bool {
+        if titles.count == 0 {
+            navigationItem.leftBarButtonItem?.isEnabled = false
+            return false
+        } else {
+            navigationItem.leftBarButtonItem?.isEnabled = true
+            return true
+        }
+    }
+    
+    /// 左上角编辑按钮状态改变判断
+    fileprivate func editButtonChange(isEnabled: Bool) {
+        let editButton = navigationItem.leftBarButtonItem?.customView as! UIButton
+        
+        if (tableView?.isEditing)! {
+            editButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
+            if isChineseLanguage {
+                editButton.setTitle("完成", for: .normal)
+            } else {
+                editButton.setTitle("Done", for: .normal)
+            }
+        } else {
+            editButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
+            if isChineseLanguage {
+                editButton.setTitle("编辑", for: .normal)
+            } else {
+                editButton.setTitle("Edit", for: .normal)
+            }
+        }
+        
+        if isEnabled {
+            
+        } else {
+            editButton.titleLabel?.font = UIFont.systemFont(ofSize: 17)
+            if isChineseLanguage {
+                editButton.setTitle("编辑", for: .normal)
+            } else {
+                editButton.setTitle("Edit", for: .normal)
+            }
+        }
     }
     
     fileprivate func setupBlur() {
@@ -246,37 +331,3 @@ extension HomeViewController {
     }
  
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

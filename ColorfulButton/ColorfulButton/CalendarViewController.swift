@@ -265,6 +265,8 @@ extension CalendarViewController: UICollectionViewDataSource, UICollectionViewDe
              未来日期不可选择, 不会保存, 同时震动提示
              */
             self.opinionDate(operatingButton, isLongPress: false)
+            
+            NotificationCenter.default.post(Notification(name: detailUpdateNotification))
         }
         
         // 按钮长按手势事件
@@ -510,6 +512,8 @@ extension CalendarViewController {
                     self.opinionIndicator(button: chooseBtn, text: text)
                 }
                 self.title = self.naviTitle
+                
+                NotificationCenter.default.post(Notification(name: detailUpdateNotification))
             }
             
         }
@@ -560,11 +564,6 @@ extension CalendarViewController {
         collectionView?.reloadData()
     }
 
-}
-
-// MARK:- 数据加载
-extension CalendarViewController {
-    
 }
 
 // MARK:- 蒙版

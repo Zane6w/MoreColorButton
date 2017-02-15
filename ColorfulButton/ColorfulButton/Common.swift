@@ -52,8 +52,10 @@ let appWillTerminateNotification = Notification.Name(rawValue: "appWillTerminate
 
 /// 时间改变通知
 let timeChangeNotification = Notification.Name("timeChange")
-
-
+/// 删除数据通知
+let deleteDataNotification = Notification.Name("deleteData")
+/// 详情页面内容更新通知
+let detailUpdateNotification = Notification.Name(rawValue: "detailUpdate")
 
 
 

@@ -137,4 +137,30 @@ class DateTool: NSObject {
         return (monthStr, dayStr)
     }
     
+    // MARK:- 处理月、日
+    /// 处理月、日（补0）
+    func processMonthAndDay(month: Int, day: Int) ->(monthStr: String, dayStr: String) {
+        var trueMonth = ""
+        var trueDay = ""
+        if month.description.characters.count == 1 {
+            if day.description.characters.count == 1 {
+                trueMonth = "0\(month)"
+                trueDay = "0\(day)"
+            } else {
+                trueMonth = "0\(month)"
+                trueDay = "\(day)"
+            }
+        } else {
+            if day.description.characters.count == 1 {
+                trueMonth = "\(month)"
+                trueDay = "0\(day)"
+            } else {
+                trueMonth = "\(month)"
+                trueDay = "\(day)"
+            }
+        }
+        
+        return (trueMonth, trueDay)
+    }
+    
 }

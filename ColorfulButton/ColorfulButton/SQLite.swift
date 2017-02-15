@@ -94,19 +94,19 @@ class SQLite: NSObject {
         let remarks = toJson(objc: remarksDict)
         
         if (db?.executeUpdate(sql, withArgumentsIn: [id, status!, remarks!, title]))! {
-            remind("插入数据成功")
+            remind("插入按钮数据成功")
             db?.commit()
             db?.close()
             return true
         } else {
-            remind("插入数据失败")
+            remind("插入按钮数据失败")
             db?.rollback()
             db?.close()
             return false
         }
     }
     
-    func insert (title: String, inTable: String? = nil) -> Bool {
+    func insert(title: String, inTable: String? = nil) -> Bool {
         db?.open()
         db?.beginTransaction()
         
@@ -118,12 +118,12 @@ class SQLite: NSObject {
         }
         
         if (db?.executeUpdate(sql, withArgumentsIn: [title]))! {
-            remind("插入数据成功")
+            remind("插入 Title 数据成功")
             db?.commit()
             db?.close()
             return true
         } else {
-            remind("插入数据失败")
+            remind("插入 Title 数据失败")
             db?.rollback()
             db?.close()
             return false
@@ -230,12 +230,12 @@ class SQLite: NSObject {
         }
         
         if (db?.executeUpdate(sql, withArgumentsIn: [status!, remarks!, id]))! {
-            remind("修改成功")
+            remind("根据 ID 修改成功")
             db?.commit()
             db?.close()
             return true
         } else {
-            remind("修改失败")
+            remind("根据 ID 修改失败 -> \(db?.lastErrorMessage() ?? "未知 ID 修改错误")")
             db?.rollback()
             db?.close()
             return false
@@ -256,11 +256,55 @@ class SQLite: NSObject {
         }
         
         if (db?.executeUpdate(sql, withArgumentsIn: nil))! {
-            remind("删除成功")
+            remind("删除全部数据成功")
             db?.close()
             return true
         } else {
-            remind("删除失败")
+            remind("删除全部数据失败")
+            db?.close()
+            return false
+        }
+    }
+    
+    /// 根据 ID 删除数据
+    func delete(id: String, inTable: String? = nil) -> Bool {
+        db?.open()
+        
+        var sql: String?
+        if inTable == nil {
+            sql = "DELETE FROM \(tableName!) WHERE btnID = ?;"
+        } else {
+            sql = "DELETE FROM \(inTable!) WHERE btnID = ?;"
+        }
+        
+        if (db?.executeUpdate(sql, withArgumentsIn: [id]))! {
+            remind("根据 ID 删除成功")
+            db?.close()
+            return true
+        } else {
+            remind("根据 ID 删除失败 -> \(db?.lastErrorMessage() ?? "未知 ID 删除错误")")
+            db?.close()
+            return false
+        }
+    }
+    
+    /// 根据 Title 删除标题数据
+    func delete(title: String, inTable: String? = nil) -> Bool {
+        db?.open()
+        
+        var sql: String?
+        if inTable == nil {
+            sql = "DELETE FROM \(tableName!) WHERE title = ?;"
+        } else {
+            sql = "DELETE FROM \(inTable!) WHERE title = ?;"
+        }
+        
+        if (db?.executeUpdate(sql, withArgumentsIn: [title]))! {
+            remind("根据 Title 删除成功")
+            db?.close()
+            return true
+        } else {
+            remind("根据 Title 删除失败 -> \(db?.lastErrorMessage() ?? "未知 Title 删除错误")")
             db?.close()
             return false
         }
